@@ -3,12 +3,14 @@ import styled from "styled-components";
 import { workflowStatusText } from "../../utils.js";
 
 const getColor = (status) =>
-  status === "current" ? "#e9b257" : status === "old" ? "#83cd79" : "#727272";
+  status === "current" ? "#57b8e9" : status === "old" ? "#727272" : "#c1c1c1";
 
 const Container = styled.div`
   font-weight: 700;
+  font-size: 12px;
+  border-radius: 4px;
   ${({ theme, status }) => `
-    transform: ${status !== "current" ? "scale(1)" : "scale(1.1)"};
+    box-shadow: ${status !== "current" ? "none" : theme.shadow};
     padding: ${theme.space.one};
     opacity: ${status !== "current" ? 0.5 : 1};
     background-color: ${getColor(status)};

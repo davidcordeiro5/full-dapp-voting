@@ -1,19 +1,31 @@
 import styled from "styled-components";
+import { Heading } from "@chakra-ui/react";
 
 import StatusTag from "./StatusTag";
 
-const Container = styled.ul`
+const Container = styled.div`
   display: flex;
   flex-direction: column;
+  h2 {
+    margin: ${({ theme }) => theme.space.three} 0;
+  }
+`;
+
+const List = styled.ul`
+  position: relative;
   width: max-content;
   list-style: none;
-  > li {
-    margin-bottom: ${({ theme }) => theme.space.one};
+  ${({ theme }) => `
+    padding-right: ${theme.space.five};
+    border-right: 1px solid ${theme.colors.borderGrey};
 
-    &:last-child {
-      margin-bottom: 0;
+    > li {
+      margin-bottom: ${theme.space.one};
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
-  }
+  `}
 `;
 
 const WorkflowStatus = (currentStatus) => {
@@ -22,20 +34,25 @@ const WorkflowStatus = (currentStatus) => {
   const getStatus = (currentStatus, workflowStatus) =>
     currentStatus === workflowStatus
       ? "current"
-      : currentStatus <= workflowStatus
-      ? "old"
-      : "comming";
+      : workflowStatus >= currentStatus
+      ? "comming"
+      : "old";
 
   return (
     <Container>
-      {workflows.map((workflow, index) => (
-        <li key={index}>
-          <StatusTag
-            workflowStatus={workflow}
-            status={getStatus(1, workflow)}
-          />
-        </li>
-      ))}
+      <Heading as="h2" size="xl" noOfLines={1}>
+        ⬇️ Work flow steps
+      </Heading>
+      <List>
+        {workflows.map((workflow, index) => (
+          <li key={index}>
+            <StatusTag
+              workflowStatus={workflow}
+              status={getStatus(currentStatus.currentStatus, workflow)}
+            />
+          </li>
+        ))}
+      </List>
     </Container>
   );
 };
