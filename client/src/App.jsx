@@ -11,7 +11,7 @@ import {
 
 import { EthProvider } from "./contexts/EthContext";
 import WorkflowStatus from "./components/WorkflowStatus/WorkflowStatus";
-import FromsContainer from "./components/FromsContainer";
+import FormsContainer from "./components/FormsContainer";
 
 import theme from "./theme.js";
 
@@ -47,7 +47,7 @@ function App() {
             </VStack>
             <Flex justify="space-between" style={{ marginTop: 68 }}>
               <WorkflowStatus currentStatus={MockedEnumSC} />
-              <FromsContainer currentStatus={MockedEnumSC} />
+              <FormsContainer currentStatus={MockedEnumSC} />
             </Flex>
           </Layout>
         </EthProvider>

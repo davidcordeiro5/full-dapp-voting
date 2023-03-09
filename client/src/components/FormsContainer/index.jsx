@@ -1,7 +1,7 @@
 import styled from "styled-components";
 import { Heading } from "@chakra-ui/react";
 
-import RegisteringVoters from "./Froms/RegisteringVoters";
+import RegisteringVoters from "./Forms/RegisteringVoters";
 
 const Container = styled.div`
   display: flex;
@@ -47,7 +47,7 @@ const SwitchForms = (currentStatus) => {
   }
 };
 
-const FromsContainer = ({ currentStatus }) => {
+const FormsContainer = ({ currentStatus }) => {
   return (
     <Container>
       <Heading as="h2" size="xl">
@@ -58,4 +58,4 @@ const FromsContainer = ({ currentStatus }) => {
   );
 };
 
-export default FromsContainer;
+export default FormsContainer;
