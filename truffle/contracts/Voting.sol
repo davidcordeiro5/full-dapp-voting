@@ -38,6 +38,9 @@ contract Voting is Ownable {
     event ProposalRegistered(uint proposalId);
     event Voted(address voter, uint proposalId);
 
+    /**
+     * @dev Modifier to check if the caller is registered as a voter.
+     */
     modifier onlyVoters() {
         require(voters[msg.sender].isRegistered, "You're not a voter");
         _;
@@ -45,12 +48,26 @@ contract Voting is Ownable {
 
     // ::::::::::::: GETTERS ::::::::::::: //
 
+    /**
+     * @notice Allows a registered voter to check informations of another voter.
+     * Requirements:
+     *  - The caller must be a registered voter.
+     * @param _addr: voter address
+     * @return Informations of the voter.
+     */
     function getVoter(
         address _addr
     ) external view onlyVoters returns (Voter memory) {
         return voters[_addr];
     }
 
+    /**
+     * @notice Allows a registered voter to get a proposal from its ID.
+     * Requirements:
+     *  - The caller must be a registered voter.
+     * @param _id: proposal ID
+     * @return Informations of the proposal.
+     */
     function getOneProposal(
         uint _id
     ) external view onlyVoters returns (Proposal memory) {
@@ -59,6 +76,14 @@ contract Voting is Ownable {
 
     // ::::::::::::: REGISTRATION ::::::::::::: //
 
+    /**
+     * @notice Allows the owner to register a new voter.
+     * Requirements:
+     *  - The caller must be the owner.
+     *  - The voter registration must be opened.
+     *  - The voter must not be already registered.
+     * @param _addr: address of the voter
+     */
     function addVoter(address _addr) external onlyOwner {
         require(
             workflowStatus == WorkflowStatus.RegisteringVoters,
@@ -72,6 +97,14 @@ contract Voting is Ownable {
 
     // ::::::::::::: PROPOSAL ::::::::::::: //
 
+    /**
+     * @notice Allows a registered voter to add a new proposal.
+     * Requirements:
+     *  - The caller must be a registered voter.
+     *  - The proposal registration must be started.
+     *  - The proposal description must not be empty.
+     * @param _desc: proposal description
+     */
     function addProposal(string calldata _desc) external onlyVoters {
         require(
             workflowStatus == WorkflowStatus.ProposalsRegistrationStarted,
@@ -80,8 +113,7 @@ contract Voting is Ownable {
         require(
             keccak256(abi.encode(_desc)) != keccak256(abi.encode("")),
             "Vous ne pouvez pas ne rien proposer"
-        ); // facultatif
-        // voir que desc est different des autres
+        );
 
         Proposal memory proposal;
         proposal.description = _desc;
@@ -91,13 +123,22 @@ contract Voting is Ownable {
 
     // ::::::::::::: VOTE ::::::::::::: //
 
+    /**
+     * @notice Allows a registered voter to vote.
+     * Requirements:
+     *  - The caller must be a registered voter.
+     *  - The voting session must be started.
+     *  - The voter must not have already voted.
+     *  - The proposal must exist.
+     * @param _id: proposal ID
+     */
     function setVote(uint _id) external onlyVoters {
         require(
             workflowStatus == WorkflowStatus.VotingSessionStarted,
             "Voting session havent started yet"
         );
         require(voters[msg.sender].hasVoted != true, "You have already voted");
-        require(_id < proposalsArray.length, "Proposal not found"); // pas obligé, et pas besoin du >0 car uint
+        require(_id < proposalsArray.length, "Proposal not found");
 
         voters[msg.sender].votedProposalId = _id;
         voters[msg.sender].hasVoted = true;
@@ -117,6 +158,13 @@ contract Voting is Ownable {
 
     // ::::::::::::: STATE ::::::::::::: //
 
+    /**
+     * @notice Allows the owner to start the proposal registration.
+     * Requirements:
+     *  - The caller must be the owner.
+     *  - The voter registration must be started.
+     * @dev Add a genesis proposal to fill the index 0 of the proposal array
+     */
     function startProposalsRegistering() external onlyOwner {
         require(
             workflowStatus == WorkflowStatus.RegisteringVoters,
@@ -134,6 +182,12 @@ contract Voting is Ownable {
         );
     }
 
+    /**
+     * @notice Allows the owner to end the proposal registration.
+     * Requirements:
+     *  - The caller must be the owner.
+     *  - The proposal registration must be started.
+     */
     function endProposalsRegistering() external onlyOwner {
         require(
             workflowStatus == WorkflowStatus.ProposalsRegistrationStarted,
@@ -146,6 +200,12 @@ contract Voting is Ownable {
         );
     }
 
+    /**
+     * @notice Allows the owner to start the voting session.
+     * Requirements:
+     *  - The caller must be the owner.
+     *  - The proposal registration must be ended.
+     */
     function startVotingSession() external onlyOwner {
         require(
             workflowStatus == WorkflowStatus.ProposalsRegistrationEnded,
@@ -158,6 +218,12 @@ contract Voting is Ownable {
         );
     }
 
+    /**
+     * @notice Allows the owner to end the voting session.
+     * Requirements:
+     *  - The caller must be the owner.
+     *  - The voting session must be started.
+     */
     function endVotingSession() external onlyOwner {
         require(
             workflowStatus == WorkflowStatus.VotingSessionStarted,
@@ -170,6 +236,12 @@ contract Voting is Ownable {
         );
     }
 
+    /**
+     * @notice Allows the owner to tally the vote.
+     * Requirements:
+     *  - The caller must be the owner.
+     *  - The voting session must be ended.
+     */
     function tallyVotes() external onlyOwner {
         require(
             workflowStatus == WorkflowStatus.VotingSessionEnded,
