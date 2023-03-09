@@ -1,24 +1,26 @@
+import { ThemeProvider } from "styled-components";
+
 import { EthProvider } from "./contexts/EthContext";
 import Intro from "./components/Intro/";
-import Setup from "./components/Setup";
 import Demo from "./components/Demo";
-import Footer from "./components/Footer";
+import WorkflowStatus from "./components/WorkflowStatus/WorkflowStatus";
+
+import theme from "./theme.js";
 
 function App() {
   return (
-    <EthProvider>
-      <div id="App">
-        <div className="container">
-          <Intro />
-          <hr />
-          <Setup />
-          <hr />
-          <Demo />
-          <hr />
-          <Footer />
+    <ThemeProvider theme={theme}>
+      <EthProvider>
+        <div id="App">
+          <div className="container">
+            <WorkflowStatus />
+            <Intro />
+            <hr />
+            <Demo />
+          </div>
         </div>
-      </div>
-    </EthProvider>
+      </EthProvider>
+    </ThemeProvider>
   );
 }
 
