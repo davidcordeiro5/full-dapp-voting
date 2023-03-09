@@ -18,7 +18,6 @@ const Container = styled.div`
 `;
 
 const StatusTag = ({ workflowStatus, status }) => {
-  console.log("status", status);
   return (
     <Container status={status}>{workflowStatusText(workflowStatus)}</Container>
   );

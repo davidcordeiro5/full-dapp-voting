@@ -1,5 +1,6 @@
 import styled from "styled-components";
 import { Heading } from "@chakra-ui/react";
+import { CheckCircleIcon } from "@chakra-ui/icons";
 
 import StatusTag from "./StatusTag";
 
@@ -12,26 +13,34 @@ const Container = styled.div`
 `;
 
 const List = styled.ul`
-  position: relative;
   width: max-content;
   list-style: none;
+
   ${({ theme }) => `
     padding-right: ${theme.space.five};
     border-right: 1px solid ${theme.colors.borderGrey};
 
     > li {
+      position: relative;
       margin-bottom: ${theme.space.one};
       &:last-child {
         margin-bottom: 0;
       }
     }
   `}
+
+  .check-circle {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    z-index: 1;
+  }
 `;
 
-const WorkflowStatus = (currentStatus) => {
+const WorkflowStatus = ({ currentStatus }) => {
   const workflows = [0, 1, 2, 3, 4, 5];
 
-  const getStatus = (currentStatus, workflowStatus) =>
+  const getStatusLabel = (currentStatus, workflowStatus) =>
     currentStatus === workflowStatus
       ? "current"
       : workflowStatus >= currentStatus
@@ -40,7 +49,7 @@ const WorkflowStatus = (currentStatus) => {
 
   return (
     <Container>
-      <Heading as="h2" size="xl" noOfLines={1}>
+      <Heading as="h2" size="xl">
         ⬇️ Work flow steps
       </Heading>
       <List>
@@ -48,8 +57,16 @@ const WorkflowStatus = (currentStatus) => {
           <li key={index}>
             <StatusTag
               workflowStatus={workflow}
-              status={getStatus(currentStatus.currentStatus, workflow)}
+              status={getStatusLabel(currentStatus, workflow)}
             />
+            {getStatusLabel(currentStatus, workflow) === "old" && (
+              <CheckCircleIcon
+                className="check-circle"
+                w={6}
+                h={6}
+                color="#57b47e"
+              />
+            )}
           </li>
         ))}
       </List>
