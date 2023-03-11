@@ -35,7 +35,7 @@ const Voting = () => {
 
   return (
     <Flex justify="space-between" style={{ marginTop: 68 }}>
-      <Button onClick={changeStatus}>changeStatus</Button>
+      {/* <Button onClick={changeStatus}>changeStatus</Button> */}
       <WorkflowStatus currentStatus={workflowStatus} />
       <FormsContainer currentStatus={workflowStatus} />
     </Flex>
