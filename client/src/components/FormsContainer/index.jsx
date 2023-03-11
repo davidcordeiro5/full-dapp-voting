@@ -2,6 +2,7 @@ import styled from "styled-components";
 import { Heading } from "@chakra-ui/react";
 
 import RegisteringVoters from "./Forms/RegisteringVoters";
+import VotingSessionStarted from "./Forms/VotingSessionStarted";
 
 const Container = styled.div`
   display: flex;
@@ -34,7 +35,7 @@ const SwitchForms = (currentStatus) => {
   //TODO: CREATE USER CONTEXT
 
   const user = {
-    isOwner: !true,
+    isOwner: false,
   };
   switch (currentStatus) {
     case 0:
@@ -42,6 +43,8 @@ const SwitchForms = (currentStatus) => {
     // case 1:
     //   return ...
     // ...
+    case 3:
+      return <VotingSessionStarted user={user} />;
     default:
       return null;
   }
