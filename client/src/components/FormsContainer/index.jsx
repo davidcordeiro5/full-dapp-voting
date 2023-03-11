@@ -34,7 +34,7 @@ const SwitchForms = (currentStatus) => {
   //TODO: CREATE USER CONTEXT
 
   const user = {
-    isOwner: !true,
+    isOwner: true,
   };
   switch (currentStatus) {
     case 0:

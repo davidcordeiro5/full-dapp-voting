@@ -12,22 +12,25 @@ import {
   Heading,
 } from "@chakra-ui/react";
 import { AddIcon } from "@chakra-ui/icons";
-
 import { useFormik } from "formik";
 import { useState } from "react";
-import Web3 from "web3";
+
+import { useEth } from "../../../contexts/EthContext";
 
 const RegisteringVoters = ({ user }) => {
+  const {
+    state: { web3 },
+  } = useEth();
+
   const [isError, setIsError] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log("user", user);
   const formik = useFormik({
     initialValues: {
       address: "",
     },
     onSubmit: (values) => {
-      const isAddress = Web3.utils.isAddress(values.address);
+      const isAddress = web3.utils.isAddress(values.address);
       setIsError(!isAddress);
 
       if (isAddress) {
