@@ -42,7 +42,7 @@ const SwitchForms = (currentStatus) => {
     //   return ...
     // ...
     case 3:
-      return <VotingSessionStarted user={state.user} />;
+      return <VotingSessionStarted />;
     default:
       return null;
   }

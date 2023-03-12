@@ -10,55 +10,123 @@ import {
   AlertDescription,
   VStack,
   Heading,
-  List,
-  ListItem,
-  ListIcon,
-  OrderedList,
-  UnorderedList,
+  Card,
+  Text,
+  CardBody
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
-
+import useEth from "../../../contexts/EthContext/useEth";
 import { useFormik } from "formik";
 import { useState } from "react";
 import Web3 from "web3";
 
-const VotingSessionStarted = ({ user }) => {
-  const [isError, setIsError] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
-  const proposals = [0, 1, 2, 3, 4, 5];
+const VotingSessionStarted = () => {
 
-  console.log("user", user);
+  const { state: { contract, user } } = useEth();
+  const [isError, setIsError] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  const [displayedProposal, setDisplayedProposal] = useState(
+    {
+      id: -1,
+      description: "",
+      nbVote: "",
+      isVisible: false
+    });
+
   const formik = useFormik({
     initialValues: {
       id: 0,
     },
-    onSubmit: (values) => {
 
-      // TODO: check if number
-      // TODO: CALL WEB 3 TO "getOneProposal" TO CHECK IF THE PROPOSAL EXIST
+    onSubmit: async () => {
 
-      var isNumber = /^\d+$|^$/.test(values.id);
-      setIsError(!isNumber);
-      if (isNumber) {
-        //TODO: CALL WEB3 TO "setVote" WITH PROPOSAL ID
+      if (isValidProposal(displayedProposal.id)) {
+        var callOK = true;
+        try {
+          await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
+          var result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
+          // setDisplayedProposal({
+          //   id: e.target.value,
+          //   description: result.description,
+          //   nbVote: result.voteCount,
+          //   isVisible: true
+          // });
+          displayedProposal.voteCount = result.voteCount;
+        }
+        catch (error) {
+          callOK = false;
+          var keyMessage = error.message.indexOf("\"message:\"");
+          if (keyMessage != -1) {
 
-      }
-      else {
-        setIsOpen(true);
+            var message = error.message.substring(keyMessage);
+            var endMessage = message.indexOf("\n");
+            var errorMessage = message.substring(0, endMessage);
+            setErrorMessage(errorMessage);
+          }
+          else {
+
+            setErrorMessage(error.message);
+          }
+        }
+
+        manageError(!callOK);
       }
     },
   });
 
-  const onChange = (e) => {
+  const onChange = async (e) => {
 
-    setIsOpen(false);
-    formik.handleChange(e);
+    if (isValidProposal(e.target.value)) {
+
+      var callOK = true;
+      // Get the proposal informations from the proposal id and display them
+      try {
+        var result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
+        setDisplayedProposal({
+          id: e.target.value,
+          description: result.description,
+          nbVote: result.voteCount,
+          isVisible: true
+        });
+      }
+      catch (error) {
+        callOK = false;
+        var keyMessage = error.message.indexOf("\"message:\"");
+        if (keyMessage != -1) {
+
+          var message = error.message.substring(keyMessage);
+          var endMessage = message.indexOf("\n");
+          var errorMessage = message.substring(0, endMessage);
+          setErrorMessage(errorMessage);
+        }
+        else {
+
+          setErrorMessage(error.message);
+        }
+      }
+
+      manageError(!callOK);
+    }
   };
 
-  const onSelectedChange = (e) => {
+  const isValidProposal = (e) => {
+    // Check if the value entered by the user is a number and if it's not the default proposal at index 0
+    var isNumber = /^\d+$|^$/.test(e);
+    var isGenesisProp = e == 0;
+    setErrorMessage("The proposal does not exist !");
+    var isValid = isNumber && !isGenesisProp;
+    manageError(!isValid);
+    return isValid;
+  }
 
+  const manageError = (isInError) => {
+    if (isInError)
+      displayedProposal.isVisible = false;
 
-  };
+    setIsError(isInError);
+    setIsOpen(isInError);
+  }
 
   const isVisible = isOpen && isError;
 
@@ -71,9 +139,7 @@ const VotingSessionStarted = ({ user }) => {
             <Heading as="h3" size="lg">
               ⏳ Voters are voting...
             </Heading>
-            {/* {isError && (
-                <FormErrorMessage>Email is required.</FormErrorMessage>
-              )} */}
+
             <Button
               size="lg"
               colorScheme="teal"
@@ -95,59 +161,17 @@ const VotingSessionStarted = ({ user }) => {
                   errorBorderColor="red.300"
                   id="id"
                   placeholder="Proposal ID"
-                  value={formik.values.address}
-                  onChange={onChange}
+                  onBlur={onChange}
                 />
               </InputGroup>
-              {/* {isError && (
-                <FormErrorMessage>Email is required.</FormErrorMessage>
-              )} */}
 
-
-              <List spacing={3}>
-                <ListItem style={{ cursor: "pointer" }} oncli>
-                  <ListIcon color='green.500' />
-                  Lorem ipsum dolor sit amet, consectetur adipisicing elit
-                </ListItem>
-                <ListItem>
-                  <ListIcon color='green.500' />
-                  Assumenda, quia temporibus eveniet a libero incidunt suscipit
-                </ListItem>
-                <ListItem>
-                  <ListIcon color='green.500' />
-                  Quidem, ipsam illum quis sed voluptatum quae eum fugit earum
-                </ListItem>
-                {/* You can also use custom icons from react-icons */}
-                <ListItem>
-                  <ListIcon color='green.500' />
-                  Quidem, ipsam illum quis sed voluptatum quae eum fugit earum
-                </ListItem>
-
-
-                {workflows.map((workflow, index) => (
-                  <li key={index}>
-                    <StatusTag
-                      workflowStatus={workflow}
-                      status={getStatusLabel(currentStatus, workflow)}
-                    />
-                    {getStatusLabel(currentStatus, workflow) === "old" && (
-                      <CheckCircleIcon
-                        className="check-circle"
-                        w={6}
-                        h={6}
-                        color="#57b47e"
-                      />
-                    )}
-                  </li>
-                ))}
-
-              </List>
-
-
-
-
-
-
+              <Card hidden={!displayedProposal.isVisible}>
+                <CardBody>
+                  <Text fontSize="xl" as="b" >Proposal N° {displayedProposal.id}.</Text>
+                  <Text fontSize="xl" >{displayedProposal.description}</Text>
+                  <Text fontSize="xl" as="i">(Nombre de vote: {displayedProposal.nbVote})</Text>
+                </CardBody>
+              </Card>
 
               <Button
                 size="lg"
@@ -170,7 +194,7 @@ const VotingSessionStarted = ({ user }) => {
               <AlertIcon />
               <AlertTitle>ERROR !</AlertTitle>
               <AlertDescription>
-                The proposal does not exist !
+                {errorMessage}
               </AlertDescription>
             </Alert>
           )}
