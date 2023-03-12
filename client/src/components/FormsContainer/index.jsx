@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Heading } from "@chakra-ui/react";
-
+import useEth from "../../contexts/EthContext/useEth";
 import RegisteringVoters from "./Forms/RegisteringVoters";
 import VotingSessionStarted from "./Forms/VotingSessionStarted";
 
@@ -33,18 +33,16 @@ const Card = styled.div`
 
 const SwitchForms = (currentStatus) => {
   //TODO: CREATE USER CONTEXT
+  const { state } = useEth();
 
-  const user = {
-    isOwner: false,
-  };
   switch (currentStatus) {
     case 0:
-      return <RegisteringVoters user={user} />;
+      return <RegisteringVoters user={state.user} />;
     // case 1:
     //   return ...
     // ...
     case 3:
-      return <VotingSessionStarted user={user} />;
+      return <VotingSessionStarted user={state.user} />;
     default:
       return null;
   }
