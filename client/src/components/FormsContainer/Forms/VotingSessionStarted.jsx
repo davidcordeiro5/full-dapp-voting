@@ -1,5 +1,4 @@
 import {
-  FormErrorMessage,
   Input,
   InputLeftAddon,
   InputGroup,
@@ -18,7 +17,6 @@ import { CheckIcon } from "@chakra-ui/icons";
 import useEth from "../../../contexts/EthContext/useEth";
 import { useFormik } from "formik";
 import { useState } from "react";
-import Web3 from "web3";
 
 const VotingSessionStarted = () => {
 
@@ -44,30 +42,15 @@ const VotingSessionStarted = () => {
       if (isValidProposal(displayedProposal.id)) {
         var callOK = true;
         try {
+
+          // Set vote and refresh UI
           await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
           var result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
-          // setDisplayedProposal({
-          //   id: e.target.value,
-          //   description: result.description,
-          //   nbVote: result.voteCount,
-          //   isVisible: true
-          // });
           displayedProposal.voteCount = result.voteCount;
         }
         catch (error) {
           callOK = false;
-          var keyMessage = error.message.indexOf("\"message:\"");
-          if (keyMessage != -1) {
-
-            var message = error.message.substring(keyMessage);
-            var endMessage = message.indexOf("\n");
-            var errorMessage = message.substring(0, endMessage);
-            setErrorMessage(errorMessage);
-          }
-          else {
-
-            setErrorMessage(error.message);
-          }
+          manageCallError(error);
         }
 
         manageError(!callOK);
@@ -92,18 +75,7 @@ const VotingSessionStarted = () => {
       }
       catch (error) {
         callOK = false;
-        var keyMessage = error.message.indexOf("\"message:\"");
-        if (keyMessage != -1) {
-
-          var message = error.message.substring(keyMessage);
-          var endMessage = message.indexOf("\n");
-          var errorMessage = message.substring(0, endMessage);
-          setErrorMessage(errorMessage);
-        }
-        else {
-
-          setErrorMessage(error.message);
-        }
+        manageCallError(error);
       }
 
       manageError(!callOK);
@@ -128,28 +100,55 @@ const VotingSessionStarted = () => {
     setIsOpen(isInError);
   }
 
+  const onClosingVotingSession = async () => {
+    var callOK = true;
+    try {
+      await contract.methods.endVotingSession().send({ from: user.address });
+    }
+    catch (error) {
+      callOK = false;
+      manageCallError(error);
+    }
+
+    manageError(!callOK);
+  }
+
+  const manageCallError = async (error) => {
+    var keyMessage = error.message.indexOf("message:" - 1);
+    if (keyMessage != -1) {
+
+      var message = error.message.substring(keyMessage);
+      var endMessage = message.indexOf("\n");
+      var errorMessage = message.substring(0, endMessage);
+      setErrorMessage(errorMessage);
+    }
+    else {
+
+      setErrorMessage(error.message);
+    }
+  }
+
   const isVisible = isOpen && isError;
 
   return (
     <>
       {user.isOwner ? (
 
-        <form onSubmit={formik.handleSubmit}>
-          <VStack align="start" spacing="24px">
-            <Heading as="h3" size="lg">
-              ⏳ Voters are voting...
-            </Heading>
+        <VStack align="start" spacing="24px">
+          <Heading as="h3" size="lg">
+            ⏳ Voters are voting...
+          </Heading>
 
-            <Button
-              size="lg"
-              colorScheme="teal"
-              type="submit"
-              rightIcon={<CheckIcon />}
-            >
-              Close voting session
-            </Button>
-          </VStack>
-        </form>
+          <Button
+            size="lg"
+            colorScheme="teal"
+            type="submit"
+            rightIcon={<CheckIcon />}
+            onClick={onClosingVotingSession}
+          >
+            Close voting session
+          </Button>
+        </VStack>
 
       ) : (
         <>
@@ -183,22 +182,22 @@ const VotingSessionStarted = () => {
               </Button>
             </VStack>
           </form>
-          {isVisible && (
-            <Alert
-              onClick={() => {
-                setIsOpen(false);
-              }}
-              style={{ borderRadius: 4, marginTop: 24, cursor: "pointer" }}
-              status="error"
-            >
-              <AlertIcon />
-              <AlertTitle>ERROR !</AlertTitle>
-              <AlertDescription>
-                {errorMessage}
-              </AlertDescription>
-            </Alert>
-          )}
         </>
+      )}
+      {isVisible && (
+        <Alert
+          onClick={() => {
+            setIsOpen(false);
+          }}
+          style={{ borderRadius: 4, marginTop: 24, cursor: "pointer" }}
+          status="error"
+        >
+          <AlertIcon />
+          <AlertTitle>ERROR !</AlertTitle>
+          <AlertDescription>
+            {errorMessage}
+          </AlertDescription>
+        </Alert>
       )}
     </>
   );
