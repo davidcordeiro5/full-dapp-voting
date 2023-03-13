@@ -40,6 +40,8 @@ const List = styled.ul`
 const WorkflowStatus = ({ currentStatus }) => {
   const workflows = [0, 1, 2, 3, 4, 5];
 
+  console.log("currentStatus", currentStatus);
+
   const getStatusLabel = (currentStatus, workflowStatus) =>
     currentStatus === workflowStatus
       ? "current"
