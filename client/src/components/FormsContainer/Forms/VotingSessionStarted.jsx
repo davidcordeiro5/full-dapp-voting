@@ -28,7 +28,7 @@ const VotingSessionStarted = () => {
     {
       id: -1,
       description: "",
-      nbVote: "",
+      voteCount: 0,
       isVisible: false
     });
 
@@ -46,7 +46,7 @@ const VotingSessionStarted = () => {
           // Set vote and refresh UI
           await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
           var result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
-          displayedProposal.voteCount = result.voteCount;
+          setDisplayedProposal((currentState) => ({ ...currentState, voteCount: result.voteCount }))
         }
         catch (error) {
           callOK = false;
@@ -69,7 +69,7 @@ const VotingSessionStarted = () => {
         setDisplayedProposal({
           id: e.target.value,
           description: result.description,
-          nbVote: result.voteCount,
+          voteCount: result.voteCount,
           isVisible: true
         });
       }
@@ -168,7 +168,7 @@ const VotingSessionStarted = () => {
                 <CardBody>
                   <Text fontSize="xl" as="b" >Proposal N° {displayedProposal.id}.</Text>
                   <Text fontSize="xl" >{displayedProposal.description}</Text>
-                  <Text fontSize="xl" as="i">(Nombre de vote: {displayedProposal.nbVote})</Text>
+                  <Text fontSize="xl" as="i">(Nombre de vote: {displayedProposal.voteCount})</Text>
                 </CardBody>
               </Card>
 
