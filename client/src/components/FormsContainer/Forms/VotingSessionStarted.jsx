@@ -40,12 +40,12 @@ const VotingSessionStarted = () => {
     onSubmit: async () => {
 
       if (isValidProposal(displayedProposal.id)) {
-        var callOK = true;
+        const callOK = true;
         try {
 
           // Set vote and refresh UI
           await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
-          var result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
+          const result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
           setDisplayedProposal((currentState) => ({ ...currentState, voteCount: result.voteCount }))
         }
         catch (error) {
@@ -62,10 +62,10 @@ const VotingSessionStarted = () => {
 
     if (isValidProposal(e.target.value)) {
 
-      var callOK = true;
+      const callOK = true;
       // Get the proposal informations from the proposal id and display them
       try {
-        var result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
+        const result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
         setDisplayedProposal({
           id: e.target.value,
           description: result.description,
@@ -84,10 +84,10 @@ const VotingSessionStarted = () => {
 
   const isValidProposal = (e) => {
     // Check if the value entered by the user is a number and if it's not the default proposal at index 0
-    var isNumber = /^\d+$|^$/.test(e);
-    var isGenesisProp = e == 0;
+    const isNumber = /^\d+$|^$/.test(e);
+    const isGenesisProp = e == 0;
     setErrorMessage("The proposal does not exist !");
-    var isValid = isNumber && !isGenesisProp;
+    const isValid = isNumber && !isGenesisProp;
     manageError(!isValid);
     return isValid;
   }
@@ -101,7 +101,7 @@ const VotingSessionStarted = () => {
   }
 
   const onClosingVotingSession = async () => {
-    var callOK = true;
+    const callOK = true;
     try {
       await contract.methods.endVotingSession().send({ from: user.address });
     }
@@ -114,12 +114,12 @@ const VotingSessionStarted = () => {
   }
 
   const manageCallError = async (error) => {
-    var keyMessage = error.message.indexOf("message:" - 1);
+    const keyMessage = error.message.indexOf("message:" - 1);
     if (keyMessage != -1) {
 
-      var message = error.message.substring(keyMessage);
-      var endMessage = message.indexOf("\n");
-      var errorMessage = message.substring(0, endMessage);
+      const message = error.message.substring(keyMessage);
+      const endMessage = message.indexOf("\n");
+      const errorMessage = message.substring(0, endMessage);
       setErrorMessage(errorMessage);
     }
     else {
