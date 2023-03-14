@@ -15,22 +15,17 @@ import { AddIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
 import { useState } from "react";
 
-import { useEth } from "../../../contexts/EthContext";
-
-const RegisteringVoters = ({ user }) => {
-  const {
-    state: { web3 },
-  } = useEth();
-
+const RegisteringVoters = ({ context }) => {
   const [isError, setIsError] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
+  console.log("context", context);
   const formik = useFormik({
     initialValues: {
       address: "",
     },
     onSubmit: (values) => {
-      const isAddress = web3.utils.isAddress(values.address);
+      const isAddress = context.web3.utils.isAddress(values.address);
       setIsError(!isAddress);
 
       if (isAddress) {
@@ -50,7 +45,7 @@ const RegisteringVoters = ({ user }) => {
 
   return (
     <>
-      {user.isOwner ? (
+      {context.user.isOwner ? (
         <>
           <form onSubmit={formik.handleSubmit}>
             <VStack align="start" spacing="24px">

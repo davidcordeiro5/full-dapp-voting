@@ -1,5 +1,6 @@
+import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Heading } from "@chakra-ui/react";
+import { Heading, Spinner } from "@chakra-ui/react";
 import useEth from "../../contexts/EthContext/useEth";
 import RegisteringVoters from "./Forms/RegisteringVoters";
 import VotingSessionStarted from "./Forms/VotingSessionStarted";
@@ -31,13 +32,14 @@ const Card = styled.div`
   width: 100%;
 `;
 
-const SwitchForms = (currentStatus) => {
-  //TODO: CREATE USER CONTEXT
-  const { state } = useEth();
+const SwitchForms = (currentStatus, ethContext) => {
+  // CREATRE form proposal start
+
+  //TODO handling ERRORS
 
   switch (currentStatus) {
     case 0:
-      return <RegisteringVoters user={state.user} />;
+      return <RegisteringVoters context={ethContext} />;
     // case 1:
     //   return ...
     // ...
@@ -49,12 +51,27 @@ const SwitchForms = (currentStatus) => {
 };
 
 const FormsContainer = ({ currentStatus }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const { state } = useEth();
+
+  console.log("state", state);
+
+  useEffect(() => {
+    if (state.user && state.web3) {
+      setIsLoading(false);
+    }
+  }, [state]);
+
   return (
     <Container>
       <Heading as="h2" size="xl">
         📄 Forms
       </Heading>
-      <Card>{SwitchForms(currentStatus)}</Card>
+      {isLoading ? (
+        <Spinner style={{ alignSelf: "center" }} size="xl" />
+      ) : (
+        <Card>{SwitchForms(currentStatus, state)}</Card>
+      )}
     </Container>
   );
 };
