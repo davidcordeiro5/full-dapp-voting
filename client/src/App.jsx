@@ -18,9 +18,6 @@ const Layout = styled.div`
 `;
 
 function App() {
-  // change this var to change the work flow
-  const MockedEnumSC = 0;
-
   return (
     <ChakraProvider>
       <ThemeProvider theme={theme}>

@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Flex, Button } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 
 import useEth from "../../contexts/EthContext/useEth";
 
@@ -25,17 +25,15 @@ const Voting = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [contract]);
 
-  const changeStatus = async () => {
-    // ERROR VM Exception while processing transaction: revert Ownable: caller is not the owner
-    await contract.methods.startProposalsRegistering().call();
-  };
+  // const changeStatus = async () => {
+  //   // ERROR VM Exception while processing transaction: revert Ownable: caller is not the owner
+  //   await contract.methods.startProposalsRegistering().call();
+  //};
 
   //IF WE NEED MOCK
-  const MockedEnumSC = 3;
 
   return (
     <Flex justify="space-between" style={{ marginTop: 68 }}>
-      {/* <Button onClick={changeStatus}>changeStatus</Button> */}
       <WorkflowStatus currentStatus={workflowStatus} />
       <FormsContainer currentStatus={workflowStatus} />
     </Flex>

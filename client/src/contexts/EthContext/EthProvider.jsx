@@ -14,8 +14,8 @@ function EthProvider({ children }) {
       // The accounts[0] is always the current connected wallet
       const user = {
         address: accounts[0],
-        isOwner: false
-      }
+        isOwner: false,
+      };
       const networkID = await web3.eth.net.getId();
       const { abi } = artifact;
 
@@ -24,7 +24,7 @@ function EthProvider({ children }) {
         address = artifact.networks[networkID].address;
         contract = new web3.eth.Contract(abi, address);
         const owner = await contract.methods.owner().call();
-        user.isOwner = owner == user.address;
+        user.isOwner = owner === user.address;
         console.log(user);
       } catch (err) {
         console.log(err);
@@ -61,7 +61,7 @@ function EthProvider({ children }) {
     };
 
     // Manage switching connected wallet
-    window.ethereum.on('accountsChanged', function (accounts) {
+    window.ethereum.on("accountsChanged", function (accounts) {
       init(state.artifact);
     });
 
