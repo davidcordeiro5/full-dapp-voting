@@ -25,9 +25,8 @@ function EthProvider({ children }) {
         contract = new web3.eth.Contract(abi, address);
         const owner = await contract.methods.owner().call();
         user.isOwner = owner === user.address;
-        console.log(user);
       } catch (err) {
-        console.log(err);
+        console.log("err =>", err);
       }
       dispatch({
         type: actions.init,

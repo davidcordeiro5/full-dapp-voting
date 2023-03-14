@@ -1,3 +1,6 @@
+import { useState } from "react";
+import { useFormik } from "formik";
+import { AddIcon } from "@chakra-ui/icons";
 import {
   FormErrorMessage,
   Input,
@@ -11,25 +14,26 @@ import {
   VStack,
   Heading,
 } from "@chakra-ui/react";
-import { AddIcon } from "@chakra-ui/icons";
-import { useFormik } from "formik";
-import { useState } from "react";
 
 const RegisteringVoters = ({ context }) => {
   const [isError, setIsError] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
 
-  console.log("context", context);
+  const { web3, contract, user } = context;
+
   const formik = useFormik({
     initialValues: {
       address: "",
     },
-    onSubmit: (values) => {
-      const isAddress = context.web3.utils.isAddress(values.address);
+    onSubmit: async (values) => {
+      const isAddress = web3.utils.isAddress(values.address);
       setIsError(!isAddress);
 
       if (isAddress) {
-        //TODO: CALL WEB3 TO PUSH THE ADDR TO VOTER MAPPING
+        console.log("isAddress", values.address, user.address);
+        await contract.methods
+          .addVoter(values.address)
+          .send({ from: user.address });
       } else {
         setIsOpen(true);
       }
@@ -45,7 +49,7 @@ const RegisteringVoters = ({ context }) => {
 
   return (
     <>
-      {context.user.isOwner ? (
+      {user.isOwner ? (
         <>
           <form onSubmit={formik.handleSubmit}>
             <VStack align="start" spacing="24px">
