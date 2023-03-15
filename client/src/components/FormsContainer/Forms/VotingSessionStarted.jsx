@@ -40,7 +40,7 @@ const VotingSessionStarted = () => {
     onSubmit: async () => {
 
       if (isValidProposal(displayedProposal.id)) {
-        const callOK = true;
+        let callOK = true;
         try {
 
           // Set vote and refresh UI

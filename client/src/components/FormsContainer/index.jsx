@@ -3,6 +3,7 @@ import { Heading } from "@chakra-ui/react";
 import useEth from "../../contexts/EthContext/useEth";
 import RegisteringVoters from "./Forms/RegisteringVoters";
 import VotingSessionStarted from "./Forms/VotingSessionStarted";
+import VotingSessionEnded from "./Forms/VotingSessionEnded";
 
 const Container = styled.div`
   display: flex;
@@ -43,6 +44,8 @@ const SwitchForms = (currentStatus) => {
     // ...
     case 3:
       return <VotingSessionStarted />;
+    case 4:
+      return <VotingSessionEnded />;
     default:
       return null;
   }
