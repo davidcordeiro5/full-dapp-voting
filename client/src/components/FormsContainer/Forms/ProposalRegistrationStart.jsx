@@ -1,40 +1,20 @@
 import { useState } from "react";
 import { useFormik } from "formik";
 import { AddIcon } from "@chakra-ui/icons";
-import {
-  FormErrorMessage,
-  Input,
-  InputLeftAddon,
-  InputGroup,
-  Button,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
-  VStack,
-  Heading,
-} from "@chakra-ui/react";
+import { Input, Button, Heading } from "@chakra-ui/react";
 
 import { AlertError } from "../../Utils";
 
-const RegisteringVoters = ({ context }) => {
-  // const [isError, setIsError] = useState(false);
+const ProposalRegistrationStart = ({ context }) => {
   const [isOpenAlert, setIsOpenAlert] = useState(false);
-
-  const { web3, contract, user } = context;
+  const isVoter = true;
 
   const formik = useFormik({
     initialValues: {
-      address: "",
+      proposal: "",
     },
     onSubmit: async (values) => {
-      const isAddress = web3.utils.isAddress(values.address);
-
-      if (!isAddress) setIsOpenAlert(true);
-
-      await contract.methods
-        .addVoter(values.address)
-        .send({ from: user.address });
+      if (!values.proposal) setIsOpenAlert(true);
     },
   });
 
@@ -45,21 +25,19 @@ const RegisteringVoters = ({ context }) => {
 
   return (
     <>
-      {user.isOwner ? (
+      {isVoter ? (
         <>
           <form onSubmit={formik.handleSubmit}>
             <Heading as="h4" size="md" style={{ marginBottom: 4 }}>
-              Enter an address
+              Enter your proposal
             </Heading>
-            <InputGroup size="lg">
-              <InputLeftAddon children="address" />
-              <Input
-                id="address"
-                placeholder="0x..."
-                value={formik.values.address}
-                onChange={onChange}
-              />
-            </InputGroup>
+            <Input
+              size="lg"
+              id="proposal"
+              placeholder="My proposal"
+              value={formik.values.proposal}
+              onChange={onChange}
+            />
             <Button
               style={{ marginTop: 24 }}
               size="lg"
@@ -67,7 +45,7 @@ const RegisteringVoters = ({ context }) => {
               type="submit"
               rightIcon={<AddIcon />}
             >
-              Add voter
+              Add propsal
             </Button>
           </form>
           <AlertError
@@ -80,11 +58,11 @@ const RegisteringVoters = ({ context }) => {
         </>
       ) : (
         <Heading as="h3" size="lg">
-          ⏳ The owner is registering voters
+          ❌ Soory, but you are not registered
         </Heading>
       )}
     </>
   );
 };
 
-export default RegisteringVoters;
+export default ProposalRegistrationStart;

@@ -7,6 +7,8 @@ import useEth from "../../contexts/EthContext/useEth";
 
 import RegisteringVoters from "./Forms/RegisteringVoters";
 import VotingSessionStarted from "./Forms/VotingSessionStarted";
+import ProposalRegistrationStart from "./Forms/ProposalRegistrationStart";
+import ProposalRegistrationEnded from "./Forms/ProposalRegistrationEnded";
 
 const Container = styled.div`
   display: flex;
@@ -39,9 +41,10 @@ const SwitchForms = (currentStatus, ethContext) => {
   switch (currentStatus) {
     case 0:
       return <RegisteringVoters context={ethContext} />;
-    // case 1:
-    //   return ...
-    // ...
+    case 1:
+      return <ProposalRegistrationStart context={ethContext} />;
+    case 2:
+      return <ProposalRegistrationEnded />;
     case 3:
       return <VotingSessionStarted context={ethContext} />;
     default:
@@ -59,7 +62,7 @@ const FormsContainer = ({ currentStatus }) => {
   // const { contract } = ethContext;
 
   // CREATRE form proposal start
-  // TODO handling ERRORS
+  // TODO handling ERRORS => check .incles (js)
 
   useEffect(() => {
     const waitingFunctions = async () => {
@@ -86,7 +89,6 @@ const FormsContainer = ({ currentStatus }) => {
         .on("connected", (str) => console.log("connected"));
     };
 
-    console.log("first");
     if (state.contract) {
       console.log("in");
       waitingFunctions();
@@ -95,9 +97,6 @@ const FormsContainer = ({ currentStatus }) => {
 
   console.log("state", state);
 
-  console.log("EventValue", eventValue);
-  console.log("oldEvents", oldEvents);
-
   useEffect(() => {
     if (state.user && state.web3) {
       setIsLoading(false);
@@ -105,13 +104,11 @@ const FormsContainer = ({ currentStatus }) => {
   }, [state]);
 
   const onChangeWorkflow = async (currentStatus) => {
-    // console.log("currentStatus", currentStatus);
+    console.log("currentStatus", currentStatus);
     await state.contract.methods
       .startProposalsRegistering()
       .call({ from: state.user.address });
   };
-
-  console.log("currentStatus", currentStatus);
 
   return (
     <Container>
