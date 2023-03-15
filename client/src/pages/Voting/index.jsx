@@ -31,7 +31,7 @@ const Voting = () => {
   //};
 
   //IF WE NEED MOCK
-
+  // const mock = 1;
   return (
     <Flex justify="space-between" style={{ marginTop: 68 }}>
       <WorkflowStatus currentStatus={workflowStatus} />

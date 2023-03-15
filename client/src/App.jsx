@@ -19,7 +19,7 @@ const Layout = styled.div`
 
 function App() {
   return (
-    <ChakraProvider>
+    <ChakraProvider theme={theme}>
       <ThemeProvider theme={theme}>
         <EthProvider>
           <Layout>
