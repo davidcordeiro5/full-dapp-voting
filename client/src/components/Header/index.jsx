@@ -1,19 +1,33 @@
-import { Heading, Center, Text, VStack } from "@chakra-ui/react";
+import {
+  Flex,
+  Heading,
+  VStack,
+  Text,
+  IconButton,
+  useColorMode,
+} from "@chakra-ui/react";
+import { MoonIcon, SunIcon } from "@chakra-ui/icons";
 
 const Header = () => {
+  const { colorMode, toggleColorMode } = useColorMode();
   return (
-    <VStack>
-      <Center>
+    <Flex alignItems="center" justifyContent="space-between">
+      <VStack alignItems="baseline">
         <Heading as="h1" size="4xl">
           🗳️ Voting dApp
         </Heading>
-      </Center>
-      <Center>
         <Text fontSize="xl" as="i">
           Project 3 for Alyra.
         </Text>
-      </Center>
-    </VStack>
+      </VStack>
+      <IconButton
+        onClick={toggleColorMode}
+        icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
+        colorScheme="teal"
+        variant="outline"
+        size="lg"
+      />
+    </Flex>
   );
 };
 

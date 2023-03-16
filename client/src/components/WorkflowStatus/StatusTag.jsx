@@ -1,11 +1,12 @@
 import styled from "styled-components";
+import { Box } from "@chakra-ui/react";
 
 import { workflowStatusText } from "../../utils.js";
 
 const getColor = (status) =>
-  status === "current" ? "#57b8e9" : status === "old" ? "#727272" : "#c1c1c1";
+  status === "current" ? "teal300" : status === "old" ? "old" : "comming";
 
-const Container = styled.div`
+const Container = styled(Box)`
   font-weight: 700;
   font-size: 12px;
   border-radius: 4px;
@@ -13,13 +14,14 @@ const Container = styled.div`
     box-shadow: ${status !== "current" ? "none" : theme.shadow};
     padding: ${theme.space.one};
     opacity: ${status !== "current" ? 0.5 : 1};
-    background-color: ${getColor(status)};
   `}
 `;
 
 const StatusTag = ({ workflowStatus, status }) => {
   return (
-    <Container status={status}>{workflowStatusText(workflowStatus)}</Container>
+    <Container bg={getColor(status)} status={status}>
+      {workflowStatusText(workflowStatus)}
+    </Container>
   );
 };
 

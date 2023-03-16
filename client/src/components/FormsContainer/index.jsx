@@ -1,8 +1,14 @@
+import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { Heading } from "@chakra-ui/react";
+import { Heading, Spinner, Button } from "@chakra-ui/react";
+import { ArrowForwardIcon } from "@chakra-ui/icons";
+
 import useEth from "../../contexts/EthContext/useEth";
+
 import RegisteringVoters from "./Forms/RegisteringVoters";
 import VotingSessionStarted from "./Forms/VotingSessionStarted";
+import ProposalRegistrationStart from "./Forms/ProposalRegistrationStart";
+import ProposalRegistrationEnded from "./Forms/ProposalRegistrationEnded";
 
 const Container = styled.div`
   display: flex;
@@ -31,30 +37,62 @@ const Card = styled.div`
   width: 100%;
 `;
 
-const SwitchForms = (currentStatus) => {
-  //TODO: CREATE USER CONTEXT
-  const { state } = useEth();
-
+const SwitchForms = (currentStatus, ethContext) => {
   switch (currentStatus) {
     case 0:
-      return <RegisteringVoters user={state.user} />;
-    // case 1:
-    //   return ...
-    // ...
+      return <RegisteringVoters context={ethContext} />;
+    case 1:
+      return <ProposalRegistrationStart context={ethContext} />;
+    case 2:
+      return <ProposalRegistrationEnded />;
     case 3:
-      return <VotingSessionStarted />;
+      return <VotingSessionStarted context={ethContext} />;
     default:
       return null;
   }
 };
 
 const FormsContainer = ({ currentStatus }) => {
+  const [isLoading, setIsLoading] = useState(true);
+  const { state } = useEth();
+
+  useEffect(() => {
+    if (state.user && state.web3) {
+      setIsLoading(false);
+    }
+  }, [state]);
+
+  const onChangeWorkflow = async (currentStatus) => {
+    // console.log("currentStatus", currentStatus);
+    const t = await state.contract.methods
+      .startProposalsRegistering()
+      .send({ from: state.user.address });
+
+    console.log("t", t);
+  };
+
   return (
     <Container>
       <Heading as="h2" size="xl">
         📄 Forms
       </Heading>
-      <Card>{SwitchForms(currentStatus)}</Card>
+      {isLoading ? (
+        <Spinner style={{ alignSelf: "center" }} size="xl" />
+      ) : (
+        <Card>{SwitchForms(currentStatus, state)}</Card>
+      )}
+
+      {!isLoading && state.user.isOwner && (
+        <Button
+          rightIcon={<ArrowForwardIcon />}
+          colorScheme="orange"
+          size="lg"
+          style={{ marginTop: 24, width: "fit-content", alignSelf: "end" }}
+          onClick={() => onChangeWorkflow(currentStatus)}
+        >
+          Change workflow
+        </Button>
+      )}
     </Container>
   );
 };

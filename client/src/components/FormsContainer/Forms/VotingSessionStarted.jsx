@@ -11,26 +11,24 @@ import {
   Heading,
   Card,
   Text,
-  CardBody
+  CardBody,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
-import useEth from "../../../contexts/EthContext/useEth";
 import { useFormik } from "formik";
 import { useState } from "react";
 
-const VotingSessionStarted = () => {
+const VotingSessionStarted = ({ context }) => {
+  const { user, contract } = context;
 
-  const { state: { contract, user } } = useEth();
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
-  const [displayedProposal, setDisplayedProposal] = useState(
-    {
-      id: -1,
-      description: "",
-      nbVote: "",
-      isVisible: false
-    });
+  const [displayedProposal, setDisplayedProposal] = useState({
+    id: -1,
+    description: "",
+    nbVote: "",
+    isVisible: false,
+  });
 
   const formik = useFormik({
     initialValues: {
@@ -38,17 +36,22 @@ const VotingSessionStarted = () => {
     },
 
     onSubmit: async () => {
-
       if (isValidProposal(displayedProposal.id)) {
         var callOK = true;
         try {
-
           // Set vote and refresh UI
-          await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
-          var result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
+          await contract.methods
+            .setVote(displayedProposal.id)
+            .send({ from: user.address });
+          var result = await contract.methods
+            .getOneProposal(displayedProposal.id)
+            .call({ from: user.address });
           displayedProposal.voteCount = result.voteCount;
-        }
-        catch (error) {
+          setDisplayedProposal((curr) => ({
+            ...curr,
+            nbVote: result.voteCount,
+          }));
+        } catch (error) {
           callOK = false;
           manageCallError(error);
         }
@@ -59,21 +62,20 @@ const VotingSessionStarted = () => {
   });
 
   const onChange = async (e) => {
-
     if (isValidProposal(e.target.value)) {
-
       var callOK = true;
       // Get the proposal informations from the proposal id and display them
       try {
-        var result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
+        var result = await contract.methods
+          .getOneProposal(e.target.value)
+          .call({ from: user.address });
         setDisplayedProposal({
           id: e.target.value,
           description: result.description,
           nbVote: result.voteCount,
-          isVisible: true
+          isVisible: true,
         });
-      }
-      catch (error) {
+      } catch (error) {
         callOK = false;
         manageCallError(error);
       }
@@ -85,55 +87,49 @@ const VotingSessionStarted = () => {
   const isValidProposal = (e) => {
     // Check if the value entered by the user is a number and if it's not the default proposal at index 0
     var isNumber = /^\d+$|^$/.test(e);
-    var isGenesisProp = e == 0;
+    var isGenesisProp = e === 0;
     setErrorMessage("The proposal does not exist !");
     var isValid = isNumber && !isGenesisProp;
     manageError(!isValid);
     return isValid;
-  }
+  };
 
   const manageError = (isInError) => {
-    if (isInError)
-      displayedProposal.isVisible = false;
+    if (isInError) displayedProposal.isVisible = false;
 
     setIsError(isInError);
     setIsOpen(isInError);
-  }
+  };
 
   const onClosingVotingSession = async () => {
     var callOK = true;
     try {
       await contract.methods.endVotingSession().send({ from: user.address });
-    }
-    catch (error) {
+    } catch (error) {
       callOK = false;
       manageCallError(error);
     }
 
     manageError(!callOK);
-  }
+  };
 
   const manageCallError = async (error) => {
     var keyMessage = error.message.indexOf("message:" - 1);
-    if (keyMessage != -1) {
-
+    if (keyMessage !== -1) {
       var message = error.message.substring(keyMessage);
       var endMessage = message.indexOf("\n");
       var errorMessage = message.substring(0, endMessage);
       setErrorMessage(errorMessage);
-    }
-    else {
-
+    } else {
       setErrorMessage(error.message);
     }
-  }
+  };
 
   const isVisible = isOpen && isError;
 
   return (
     <>
       {user.isOwner ? (
-
         <VStack align="start" spacing="24px">
           <Heading as="h3" size="lg">
             ⏳ Voters are voting...
@@ -149,7 +145,6 @@ const VotingSessionStarted = () => {
             Close voting session
           </Button>
         </VStack>
-
       ) : (
         <>
           <form onSubmit={formik.handleSubmit}>
@@ -166,9 +161,13 @@ const VotingSessionStarted = () => {
 
               <Card hidden={!displayedProposal.isVisible}>
                 <CardBody>
-                  <Text fontSize="xl" as="b" >Proposal N° {displayedProposal.id}.</Text>
-                  <Text fontSize="xl" >{displayedProposal.description}</Text>
-                  <Text fontSize="xl" as="i">(Nombre de vote: {displayedProposal.nbVote})</Text>
+                  <Text fontSize="xl" as="b">
+                    Proposal N° {displayedProposal.id}.
+                  </Text>
+                  <Text fontSize="xl">{displayedProposal.description}</Text>
+                  <Text fontSize="xl" as="i">
+                    (Nombre de vote: {displayedProposal.nbVote})
+                  </Text>
                 </CardBody>
               </Card>
 
@@ -194,9 +193,7 @@ const VotingSessionStarted = () => {
         >
           <AlertIcon />
           <AlertTitle>ERROR !</AlertTitle>
-          <AlertDescription>
-            {errorMessage}
-          </AlertDescription>
+          <AlertDescription>{errorMessage}</AlertDescription>
         </Alert>
       )}
     </>
