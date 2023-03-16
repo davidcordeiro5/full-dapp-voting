@@ -56,45 +56,6 @@ const FormsContainer = ({ currentStatus }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { state } = useEth();
 
-  // const [eventValue, setEventValue] = useState();
-  // const [oldEvents, setOldEvents] = useState();
-
-  // const { contract } = ethContext;
-
-  // CREATRE form proposal start
-  // TODO handling ERRORS => check .incles (js)
-
-  // useEffect(() => {
-  //   const waitingFunctions = async () => {
-  //     const oldEvents = await state.contract.getPastEvents("VoterRegistered", {
-  //       fromBlock: 0,
-  //       toBlock: "latest",
-  //     });
-
-  //     let oldies = [];
-  //     oldEvents.forEach((event) => {
-  //       oldies.push(event.returnValues._val);
-  //     });
-  //     setOldEvents(oldies);
-
-  //     await state.contract.events
-  //       .VoterRegistered({ fromBlock: "earliest" })
-  //       .on("data", (event) => {
-  //         console.log("event", event);
-  //         let lesevents = event.returnValues._val;
-  //         setEventValue(lesevents);
-  //       })
-  //       .on("changed", (changed) => console.log("changed", changed))
-  //       .on("error", (err) => console.log(err))
-  //       .on("connected", (str) => console.log("connected"));
-  //   };
-
-  //   if (state.contract) {
-  //     console.log("in");
-  //     waitingFunctions();
-  //   }
-  // }, [state.contract]);
-
   useEffect(() => {
     if (state.user && state.web3) {
       setIsLoading(false);
@@ -102,10 +63,12 @@ const FormsContainer = ({ currentStatus }) => {
   }, [state]);
 
   const onChangeWorkflow = async (currentStatus) => {
-    console.log("currentStatus", currentStatus);
-    await state.contract.methods
+    // console.log("currentStatus", currentStatus);
+    const t = await state.contract.methods
       .startProposalsRegistering()
-      .call({ from: state.user.address });
+      .send({ from: state.user.address });
+
+    console.log("t", t);
   };
 
   return (
