@@ -23,7 +23,7 @@ const Header = () => {
       <IconButton
         onClick={toggleColorMode}
         icon={colorMode === "light" ? <MoonIcon /> : <SunIcon />}
-        colorScheme="cyan"
+        colorScheme="teal"
         variant="outline"
         size="lg"
       />
