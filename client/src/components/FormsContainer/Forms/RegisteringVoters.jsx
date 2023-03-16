@@ -7,13 +7,14 @@ import {
   InputGroup,
   Button,
   Heading,
+  useToast,
 } from "@chakra-ui/react";
 
 import { AlertError } from "../../Utils";
 
 const RegisteringVoters = ({ context }) => {
-  // const [isError, setIsError] = useState(false);
   const [isOpenAlert, setIsOpenAlert] = useState(false);
+  const toast = useToast();
 
   const { web3, contract, user } = context;
 
@@ -29,6 +30,15 @@ const RegisteringVoters = ({ context }) => {
       await contract.methods
         .addVoter(values.address)
         .send({ from: user.address });
+
+      toast({
+        position: "top-left",
+        title: "Voter Added.",
+        description: `Address: ${values.address}`,
+        status: "success",
+        duration: 5000,
+        isClosable: true,
+      });
     },
   });
 
