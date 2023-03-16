@@ -16,7 +16,7 @@ const theme = extendTheme({
     teal300: "#38B2AC",
     old: "#727272",
     comming: "#c1c1c1",
-    borderGrey: "rgb(160, 160, 160)",
+    borderGrey: "#a0a0a0",
   },
 });
 

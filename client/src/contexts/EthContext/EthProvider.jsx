@@ -15,7 +15,9 @@ function EthProvider({ children }) {
       const user = {
         address: accounts[0],
         isOwner: false,
+        isVoter: false,
       };
+
       const networkID = await web3.eth.net.getId();
       const { abi } = artifact;
 
@@ -25,6 +27,20 @@ function EthProvider({ children }) {
         contract = new web3.eth.Contract(abi, address);
         const owner = await contract.methods.owner().call();
         user.isOwner = owner === user.address;
+
+        const oldEvents = await contract.getPastEvents("VoterRegistered", {
+          fromBlock: 0,
+          toBlock: "latest",
+        });
+
+        let votersAddress = [];
+        oldEvents.forEach((event) => {
+          votersAddress.push(event.returnValues.voterAddress);
+        });
+
+        user.isVoter = !!votersAddress.find(
+          (element) => element === accounts[0]
+        );
       } catch (err) {
         console.log("err =>", err);
       }
