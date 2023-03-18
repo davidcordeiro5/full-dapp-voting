@@ -1,21 +1,43 @@
 import { useState } from "react";
 import { useFormik } from "formik";
 import { AddIcon } from "@chakra-ui/icons";
-import { Input, Button, Heading } from "@chakra-ui/react";
+import { Input, Button, Heading, useToast } from "@chakra-ui/react";
 
 import { AlertError } from "../../Utils";
 
 const ProposalRegistrationStart = ({ context }) => {
+  const toast = useToast();
   const [isOpenAlert, setIsOpenAlert] = useState(false);
-  const { user } = context;
+  const { user, contract } = context;
 
   const formik = useFormik({
     initialValues: {
       proposal: "",
     },
     onSubmit: async (values) => {
-      if (!values.proposal) setIsOpenAlert(true);
-      console.log("values", values);
+      if (!values.proposal) {
+        setIsOpenAlert(true);
+        return;
+      }
+
+      try {
+        await contract.methods
+          .addProposal(values.proposal)
+          .send({ from: user.address });
+
+        toast({
+          position: "bottom-left",
+          title: "Proposal added.",
+          description: `Proposal: ${values.proposal}`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        formik.setFieldValue("proposal", "");
+      } catch (err) {
+        console.log("err", err);
+      }
     },
   });
 
