@@ -7,7 +7,7 @@ import { AlertError } from "../../Utils";
 
 const ProposalRegistrationStart = ({ context }) => {
   const [isOpenAlert, setIsOpenAlert] = useState(false);
-  const isVoter = true;
+  const { user } = context;
 
   const formik = useFormik({
     initialValues: {
@@ -15,6 +15,7 @@ const ProposalRegistrationStart = ({ context }) => {
     },
     onSubmit: async (values) => {
       if (!values.proposal) setIsOpenAlert(true);
+      console.log("values", values);
     },
   });
 
@@ -25,7 +26,7 @@ const ProposalRegistrationStart = ({ context }) => {
 
   return (
     <>
-      {isVoter ? (
+      {user.isVoter ? (
         <>
           <form onSubmit={formik.handleSubmit}>
             <Heading as="h4" size="md" style={{ marginBottom: 4 }}>

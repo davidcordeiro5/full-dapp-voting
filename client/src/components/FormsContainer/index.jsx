@@ -56,6 +56,14 @@ const FormsContainer = ({ currentStatus }) => {
   const [isLoading, setIsLoading] = useState(true);
   const { state } = useEth();
 
+  const buttonLabels = [
+    "Start proposals registration",
+    "Close proposals registration",
+    "Start voting session",
+    "Close voting session",
+    "Tally votes",
+  ];
+
   useEffect(() => {
     if (state.user && state.web3) {
       setIsLoading(false);
@@ -63,12 +71,35 @@ const FormsContainer = ({ currentStatus }) => {
   }, [state]);
 
   const onChangeWorkflow = async (currentStatus) => {
-    // console.log("currentStatus", currentStatus);
-    const t = await state.contract.methods
-      .startProposalsRegistering()
-      .send({ from: state.user.address });
-
-    console.log("t", t);
+    switch (currentStatus) {
+      case 0:
+        await state.contract.methods
+          .startProposalsRegistering()
+          .send({ from: state.user.address });
+        break;
+      case 1:
+        await state.contract.methods
+          .endProposalsRegistering()
+          .send({ from: state.user.address });
+        break;
+      case 2:
+        await state.contract.methods
+          .startVotingSession()
+          .send({ from: state.user.address });
+        break;
+      case 3:
+        await state.contract.methods
+          .endVotingSession()
+          .send({ from: state.user.address });
+        break;
+      case 4:
+        await state.contract.methods
+          .tallyVotes()
+          .send({ from: state.user.address });
+        break;
+      default:
+        return null;
+    }
   };
 
   return (
@@ -82,7 +113,7 @@ const FormsContainer = ({ currentStatus }) => {
         <Card>{SwitchForms(currentStatus, state)}</Card>
       )}
 
-      {!isLoading && state.user.isOwner && (
+      {!isLoading && state.user.isOwner && currentStatus < 5 && (
         <Button
           rightIcon={<ArrowForwardIcon />}
           colorScheme="orange"
@@ -90,7 +121,7 @@ const FormsContainer = ({ currentStatus }) => {
           style={{ marginTop: 24, width: "fit-content", alignSelf: "end" }}
           onClick={() => onChangeWorkflow(currentStatus)}
         >
-          Change workflow
+          {buttonLabels[currentStatus]}
         </Button>
       )}
     </Container>
