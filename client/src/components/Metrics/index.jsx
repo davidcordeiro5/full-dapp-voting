@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Heading } from "@chakra-ui/react";
 import Voters from "./Voters";
+import Proposals from "./Proposals";
 
 const Container = styled.div`
   ${({ theme }) => `
@@ -12,22 +13,24 @@ const Container = styled.div`
 `;
 
 const Metrics = ({ contract }) => {
-  const [oldEvents, setOldEvents] = useState([]);
-  const [eventValue, setEventValue] = useState();
+  const [storedVoters, setStoredVoters] = useState([]);
+  const [rencentVoter, setRencentVoter] = useState();
+  const [storedProposals, setStoredProposal] = useState([]);
+  const [rencentProposals, setRencentProposals] = useState([]);
 
   useEffect(() => {
     const waitingFunctions = async () => {
+      function removeDuplicates(arr) {
+        return arr.filter((item, index) => arr.indexOf(item) === index);
+      }
+
       const oldEvents = await contract.getPastEvents("VoterRegistered", {
         fromBlock: 0,
         toBlock: "latest",
       });
 
-      function removeDuplicates(arr) {
-        return arr.filter((item, index) => arr.indexOf(item) === index);
-      }
-
       oldEvents.forEach((event) => {
-        setOldEvents((crr) =>
+        setStoredVoters((crr) =>
           removeDuplicates([...crr, event.returnValues.voterAddress])
         );
       });
@@ -35,11 +38,27 @@ const Metrics = ({ contract }) => {
       await contract.events
         .VoterRegistered({ fromBlock: "earliest" })
         .on("data", (event) => {
-          setEventValue(event.returnValues.voterAddress);
-        })
-        .on("changed", (changed) => console.log("changed", changed))
-        .on("error", (err) => console.log(err))
-        .on("connected", (str) => console.log("connected"));
+          setRencentVoter(event.returnValues.voterAddress);
+        });
+
+      const old = await contract.getPastEvents("ProposalRegistered", {
+        fromBlock: 0,
+        toBlock: "latest",
+      });
+
+      old.forEach((event) => {
+        setStoredProposal((crr) =>
+          removeDuplicates([...crr, event.returnValues.proposalId])
+        );
+      });
+
+      await contract.events
+        .ProposalRegistered({ fromBlock: "earliest" })
+        .on("data", (event) => {
+          setRencentProposals((crr) =>
+            removeDuplicates([...crr, event.returnValues.proposalId])
+          );
+        });
     };
 
     if (contract) {
@@ -52,7 +71,11 @@ const Metrics = ({ contract }) => {
       <Heading as="h2" size="xl" style={{ marginBottom: 24 }}>
         📊 Metrics
       </Heading>
-      <Voters addressList={oldEvents} lastAddress={eventValue} />
+      <Voters addressList={storedVoters} lastAddress={rencentVoter} />
+      <Proposals
+        storedProposals={storedProposals}
+        rencentProposals={rencentProposals}
+      />
     </Container>
   );
 };

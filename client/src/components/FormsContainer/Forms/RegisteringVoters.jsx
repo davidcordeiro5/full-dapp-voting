@@ -25,14 +25,17 @@ const RegisteringVoters = ({ context }) => {
     onSubmit: async (values) => {
       const isAddress = web3.utils.isAddress(values.address);
 
-      if (!isAddress) setIsOpenAlert(true);
+      if (!isAddress) {
+        setIsOpenAlert(true);
+        return;
+      }
 
       await contract.methods
         .addVoter(values.address)
         .send({ from: user.address });
 
       toast({
-        position: "top-left",
+        position: "bottom-left",
         title: "Voter Added.",
         description: `Address: ${values.address}`,
         status: "success",
