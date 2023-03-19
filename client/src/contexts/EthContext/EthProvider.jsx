@@ -14,8 +14,10 @@ function EthProvider({ children }) {
       // The accounts[0] is always the current connected wallet
       const user = {
         address: accounts[0],
-        isOwner: false
-      }
+        isOwner: false,
+        isVoter: false,
+      };
+
       const networkID = await web3.eth.net.getId();
       const { abi } = artifact;
 
@@ -24,10 +26,23 @@ function EthProvider({ children }) {
         address = artifact.networks[networkID].address;
         contract = new web3.eth.Contract(abi, address);
         const owner = await contract.methods.owner().call();
-        user.isOwner = owner == user.address;
-        console.log(user);
+        user.isOwner = owner === user.address;
+
+        const oldEvents = await contract.getPastEvents("VoterRegistered", {
+          fromBlock: 0,
+          toBlock: "latest",
+        });
+
+        let votersAddress = [];
+        oldEvents.forEach((event) => {
+          votersAddress.push(event.returnValues.voterAddress);
+        });
+
+        user.isVoter = !!votersAddress.find(
+          (element) => element === accounts[0]
+        );
       } catch (err) {
-        console.log(err);
+        console.log("err =>", err);
       }
       dispatch({
         type: actions.init,
@@ -61,7 +76,7 @@ function EthProvider({ children }) {
     };
 
     // Manage switching connected wallet
-    window.ethereum.on('accountsChanged', function (accounts) {
+    window.ethereum.on("accountsChanged", function (accounts) {
       init(state.artifact);
     });
 

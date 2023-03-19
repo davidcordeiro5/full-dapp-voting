@@ -1,44 +1,58 @@
 import { useEffect, useState } from "react";
-import { Flex, Button } from "@chakra-ui/react";
+import { Flex } from "@chakra-ui/react";
 
 import useEth from "../../contexts/EthContext/useEth";
 
 import WorkflowStatus from "../../components/WorkflowStatus/WorkflowStatus";
 import FormsContainer from "../../components/FormsContainer";
+import Metrics from "../../components/Metrics";
+import Profile from "../../components/Profile";
 
 const Voting = () => {
-  const {
-    state: { contract },
-  } = useEth();
-
-  const [workflowStatus, setWorkflowStatus] = useState(-1);
+  const { state } = useEth();
+  const [workflowStatus, setWorkflowStatus] = useState(0);
 
   useEffect(() => {
+    if (!state.contract) {
+      return;
+    }
+
     const getWorkflowStatus = async () => {
-      if (contract) {
-        const value = await contract.methods.workflowStatus().call();
-        setWorkflowStatus(parseInt(value));
-      }
+      const value = await state.contract.methods.workflowStatus().call();
+      setWorkflowStatus(parseInt(value));
     };
 
     getWorkflowStatus();
+  }, [state]);
+
+  useEffect(() => {
+    if (!state.contract) {
+      return;
+    }
+
+    const listenWorkflowStatusChange = async () => {
+      await state.contract.events
+        .WorkflowStatusChange({ fromBlock: "earliest" })
+        .on("data", (event) => {
+          setWorkflowStatus(parseInt(event.returnValues.newStatus));
+        })
+        .on("error", (err) => console.log(err));
+    };
+
+    listenWorkflowStatusChange();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [contract]);
-
-  const changeStatus = async () => {
-    // ERROR VM Exception while processing transaction: revert Ownable: caller is not the owner
-    await contract.methods.startProposalsRegistering().call();
-  };
-
-  //IF WE NEED MOCK
-  const MockedEnumSC = 3;
+  }, [state]);
 
   return (
-    <Flex justify="space-between" style={{ marginTop: 68 }}>
-      {/* <Button onClick={changeStatus}>changeStatus</Button> */}
-      <WorkflowStatus currentStatus={workflowStatus} />
-      <FormsContainer currentStatus={workflowStatus} />
-    </Flex>
+    <>
+      <Profile user={state.user} />
+      <Flex justify="space-between" style={{ marginTop: 32 }}>
+        <WorkflowStatus currentStatus={workflowStatus} />
+        <FormsContainer currentStatus={workflowStatus} />
+      </Flex>
+      <Metrics contract={state.contract} />
+    </>
   );
 };
 

@@ -1,47 +1,43 @@
 import { useState } from "react";
 import { useFormik } from "formik";
 import { AddIcon } from "@chakra-ui/icons";
-import {
-  Input,
-  InputLeftAddon,
-  InputGroup,
-  Button,
-  Heading,
-  useToast,
-} from "@chakra-ui/react";
+import { Input, Button, Heading, useToast } from "@chakra-ui/react";
 
 import { AlertError } from "../../Utils";
 
-const RegisteringVoters = ({ context }) => {
-  const [isOpenAlert, setIsOpenAlert] = useState(false);
+const ProposalRegistrationStart = ({ context }) => {
   const toast = useToast();
-
-  const { web3, contract, user } = context;
+  const [isOpenAlert, setIsOpenAlert] = useState(false);
+  const { user, contract } = context;
 
   const formik = useFormik({
     initialValues: {
-      address: "",
+      proposal: "",
     },
     onSubmit: async (values) => {
-      const isAddress = web3.utils.isAddress(values.address);
-
-      if (!isAddress) {
+      if (!values.proposal) {
         setIsOpenAlert(true);
         return;
       }
 
-      await contract.methods
-        .addVoter(values.address)
-        .send({ from: user.address });
+      try {
+        await contract.methods
+          .addProposal(values.proposal)
+          .send({ from: user.address });
 
-      toast({
-        position: "bottom-left",
-        title: "Voter Added.",
-        description: `Address: ${values.address}`,
-        status: "success",
-        duration: 5000,
-        isClosable: true,
-      });
+        toast({
+          position: "bottom-left",
+          title: "Proposal added.",
+          description: `Proposal: ${values.proposal}`,
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        formik.setFieldValue("proposal", "");
+      } catch (err) {
+        console.log("err", err);
+      }
     },
   });
 
@@ -52,21 +48,19 @@ const RegisteringVoters = ({ context }) => {
 
   return (
     <>
-      {user.isOwner ? (
+      {user.isVoter ? (
         <>
           <form onSubmit={formik.handleSubmit}>
             <Heading as="h4" size="md" style={{ marginBottom: 4 }}>
-              Enter an address
+              Enter your proposal
             </Heading>
-            <InputGroup size="lg">
-              <InputLeftAddon children="address" />
-              <Input
-                id="address"
-                placeholder="0x..."
-                value={formik.values.address}
-                onChange={onChange}
-              />
-            </InputGroup>
+            <Input
+              size="lg"
+              id="proposal"
+              placeholder="My proposal"
+              value={formik.values.proposal}
+              onChange={onChange}
+            />
             <Button
               style={{ marginTop: 24 }}
               size="lg"
@@ -74,7 +68,7 @@ const RegisteringVoters = ({ context }) => {
               type="submit"
               rightIcon={<AddIcon />}
             >
-              Add voter
+              Add propsal
             </Button>
           </form>
           <AlertError
@@ -87,11 +81,11 @@ const RegisteringVoters = ({ context }) => {
         </>
       ) : (
         <Heading as="h3" size="lg">
-          ⏳ The owner is registering voters
+          ❌ Soory, but you are not registered
         </Heading>
       )}
     </>
   );
 };
 
-export default RegisteringVoters;
+export default ProposalRegistrationStart;
