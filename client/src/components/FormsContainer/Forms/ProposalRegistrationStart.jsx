@@ -81,7 +81,7 @@ const ProposalRegistrationStart = ({ context }) => {
         </>
       ) : (
         <Heading as="h3" size="lg">
-          ❌ Soory, but you are not registered
+          ❌ Sorry, but you are not registered.
         </Heading>
       )}
     </>

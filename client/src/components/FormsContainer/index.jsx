@@ -47,7 +47,7 @@ const SwitchForms = (currentStatus, ethContext) => {
     case 2:
       return <ProposalRegistrationEnded />;
     case 3:
-      return <VotingSessionStarted />;
+      return <VotingSessionStarted context={ethContext} />;
     case 4:
       return <VotingSessionEnded />;
     default:
@@ -91,6 +91,7 @@ const FormsContainer = ({ currentStatus }) => {
           .send({ from: state.user.address });
         break;
       case 3:
+        console.log("test");
         await state.contract.methods
           .endVotingSession()
           .send({ from: state.user.address });

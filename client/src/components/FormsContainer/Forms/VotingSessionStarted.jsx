@@ -15,7 +15,7 @@ import {
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const VotingSessionStarted = ({ context }) => {
   const { user, contract } = context;
@@ -42,8 +42,6 @@ const VotingSessionStarted = ({ context }) => {
         try {
           // Set vote and refresh UI
           await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
-          const result = await contract.methods.getOneProposal(displayedProposal.id).call({ from: user.address });
-          setDisplayedProposal((currentState) => ({ ...currentState, voteCount: result.voteCount }))
         }
         catch (error) {
           callOK = false;
@@ -55,10 +53,10 @@ const VotingSessionStarted = ({ context }) => {
     },
   });
 
-  const onChange = async (e) => {
+  const onProposalIdChange = async (e) => {
     if (isValidProposal(e.target.value)) {
 
-      const callOK = true;
+      let callOK = true;
       // Get the proposal informations from the proposal id and display them
       try {
         const result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
@@ -70,6 +68,7 @@ const VotingSessionStarted = ({ context }) => {
         });
       } catch (error) {
         callOK = false;
+        console.log(error);
         manageCallError(error);
       }
 
@@ -94,18 +93,6 @@ const VotingSessionStarted = ({ context }) => {
     setIsOpen(isInError);
   };
 
-  const onClosingVotingSession = async () => {
-    const callOK = true;
-    try {
-      await contract.methods.endVotingSession().send({ from: user.address });
-    } catch (error) {
-      callOK = false;
-      manageCallError(error);
-    }
-
-    manageError(!callOK);
-  };
-
   const manageCallError = async (error) => {
     const keyMessage = error.message.indexOf("message:" - 1);
     if (keyMessage != -1) {
@@ -128,49 +115,47 @@ const VotingSessionStarted = ({ context }) => {
           <Heading as="h3" size="lg">
             ⏳ Voters are voting...
           </Heading>
-
-          <Button
-            size="lg"
-            colorScheme="teal"
-            type="submit"
-            rightIcon={<CheckIcon />}
-            onClick={onClosingVotingSession}
-          >
-            Close voting session
-          </Button>
         </VStack>
       ) : (
         <>
-          <form onSubmit={formik.handleSubmit}>
-            <VStack align="start" spacing="24px">
-              <InputGroup size="lg">
-                <InputLeftAddon children="id" />
-                <Input
-                  errorBorderColor="red.300"
-                  id="id"
-                  placeholder="Proposal ID"
-                  onBlur={onChange}
-                />
-              </InputGroup>
+          {user.isVoter ? (
 
-              <Card hidden={!displayedProposal.isVisible}>
-                <CardBody>
-                  <Text fontSize="xl" as="b" >Proposal N° {displayedProposal.id}.</Text>
-                  <Text fontSize="xl" >{displayedProposal.description}</Text>
-                  <Text fontSize="xl" as="i">(Nombre de vote: {displayedProposal.voteCount})</Text>
-                </CardBody>
-              </Card>
+            <form onSubmit={formik.handleSubmit}>
+              <VStack align="start" spacing="24px">
+                <InputGroup size="lg">
+                  <InputLeftAddon children="id" />
+                  <Input
+                    errorBorderColor="red.300"
+                    id="id"
+                    placeholder="Proposal ID"
+                    onBlur={onProposalIdChange}
+                  />
+                </InputGroup>
 
-              <Button
-                size="lg"
-                colorScheme="teal"
-                type="submit"
-                rightIcon={<CheckIcon />}
-              >
-                Vote
-              </Button>
-            </VStack>
-          </form>
+                <Card hidden={!displayedProposal.isVisible}>
+                  <CardBody>
+                    <Text fontSize="xl" as="b" >Proposal N° {displayedProposal.id}.</Text>
+                    <Text fontSize="xl" >{displayedProposal.description}</Text>
+                  </CardBody>
+                </Card>
+
+                <Button
+                  size="lg"
+                  colorScheme="teal"
+                  type="submit"
+                  rightIcon={<CheckIcon />}
+                >
+                  Vote
+                </Button>
+              </VStack>
+            </form>
+
+          ) : (
+            <Heading as="h3" size="lg">
+              ❌ Sorry, but you are not registered.
+            </Heading>
+          )
+          }
         </>
       )}
       {isVisible && (
