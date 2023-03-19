@@ -44,7 +44,11 @@ module.exports = async (deployer, network) => {
     // console.log((await votingInstance.workflowStatus()).toNumber());
 
     // End voting session
-    await votingInstance.endVotingSession({ from: owner });
+    // await votingInstance.endVotingSession({ from: owner });
+    console.log((await votingInstance.workflowStatus()).toNumber());
+
+    // End voting session
+    await votingInstance.tallyVotes({ from: owner });
     console.log((await votingInstance.workflowStatus()).toNumber());
 
     // var p1 = await votingInstance.getOneProposal(0, { from: voter1 });

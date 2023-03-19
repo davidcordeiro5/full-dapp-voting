@@ -10,6 +10,7 @@ import VotingSessionStarted from "./Forms/VotingSessionStarted";
 import VotingSessionEnded from "./Forms/VotingSessionEnded";
 import ProposalRegistrationStart from "./Forms/ProposalRegistrationStart";
 import ProposalRegistrationEnded from "./Forms/ProposalRegistrationEnded";
+import VotesTallied from "./Forms/VotesTallied";
 
 const Container = styled.div`
   display: flex;
@@ -50,6 +51,8 @@ const SwitchForms = (currentStatus, ethContext) => {
       return <VotingSessionStarted context={ethContext} />;
     case 4:
       return <VotingSessionEnded />;
+    case 5:
+      return <VotesTallied />;
     default:
       return null;
   }
