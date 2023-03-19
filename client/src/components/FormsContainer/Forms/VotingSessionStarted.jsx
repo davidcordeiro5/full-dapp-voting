@@ -27,7 +27,6 @@ const VotingSessionStarted = ({ context }) => {
     {
       id: -1,
       description: "",
-      voteCount: 0,
       isVisible: false
     });
 
@@ -63,7 +62,6 @@ const VotingSessionStarted = ({ context }) => {
         setDisplayedProposal({
           id: e.target.value,
           description: result.description,
-          voteCount: result.voteCount,
           isVisible: true
         });
       } catch (error) {
