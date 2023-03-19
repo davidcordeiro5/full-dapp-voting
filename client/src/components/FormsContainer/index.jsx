@@ -52,7 +52,7 @@ const SwitchForms = (currentStatus, ethContext) => {
     case 4:
       return <VotingSessionEnded />;
     case 5:
-      return <VotesTallied />;
+      return <VotesTallied context={ethContext} />;
     default:
       return null;
   }

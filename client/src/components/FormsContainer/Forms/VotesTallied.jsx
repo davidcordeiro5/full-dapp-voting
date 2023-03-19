@@ -1,66 +1,88 @@
 import {
-  Button,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   VStack,
   Heading,
+  Card,
+  Text,
+  CardBody,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import useEth from "../../../contexts/EthContext/useEth";
 import { useEffect, useState } from "react";
 
-const VotesTallied = () => {
+const VotesTallied = (context) => {
 
-  const { state: { user } } = useEth();
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const { user, contract } = context;
 
-  const isVisible = isOpen && isError;
+  const [winningProposal, setWinningProposal] = useState({
+    id: -1,
+    description: "",
+    voteCount: 0,
+    isVisible: false,
+  });
+
+  useEffect(() => {
+    (async function () {
+
+      console.log("test");
+
+      try {
+
+        setWinningProposal({
+          id: 12,
+          description: "Proopsal de test",
+          voteCount: 6,
+          isVisible: true,
+        });
+
+        if (contract) {
+
+
+          const winningProposalID = await contract.methods
+            .winningProposalID()
+            .call();
+
+          console.log(winningProposalID);
+
+          var result = await contract.methods
+            .getOneProposal(winningProposalID)
+            .call({ from: user.address });
+
+          console.log(result);
+        }
+      }
+      catch (error) {
+
+        console.log(error);
+      }
+    })();
+  }, [context])
+
 
   return (
     <>
-      {user.isOwner ? (
+      {
+        <>
+          <VStack align="center" spacing="24px">
 
-        <VStack align="start" spacing="24px">
-          <Heading as="h3" size="lg">
-            ⏳ is now closed.
-            Voters are waiting for the result !
-          </Heading>
-        </VStack>
-
-      ) : (
-
-        user.isVoter ? (
-          <>
             <Heading as="h3" size="lg">
-              ⏳ The voting session is now closed.
-              Wait for the results !
+              🏆 La proposition {winningProposal.id} remporte le vote ! 🏆
             </Heading>
-          </>
-        ) : (
-          <Heading as="h3" size="lg">
-            ❌ Sorry, but you are not registered.
-          </Heading>
-        )
-      )}
-      {isVisible && (
-        <Alert
-          onClick={() => {
-            setIsOpen(false);
-          }}
-          style={{ borderRadius: 4, marginTop: 24, cursor: "pointer" }}
-          status="error"
-        >
-          <AlertIcon />
-          <AlertTitle>ERROR !</AlertTitle>
-          <AlertDescription>
-            {errorMessage}
-          </AlertDescription>
-        </Alert>
-      )}
+
+            <Card hidden={!winningProposal.isVisible} style={{ alignSelf: "center" }}>
+              <CardBody>
+                <Text fontSize="xl" as="b">
+                  Proposal N° {winningProposal.id}.
+                </Text>
+                <Text fontSize="xl">{winningProposal.description}</Text>
+                <Text fontSize="xl" as="i">
+                  (Nombre de vote: {winningProposal.voteCount})
+                </Text>
+              </CardBody>
+            </Card>
+
+          </VStack>
+        </>
+      }
     </>
   );
 };
