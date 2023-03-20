@@ -7,8 +7,10 @@ import useEth from "../../contexts/EthContext/useEth";
 
 import RegisteringVoters from "./Forms/RegisteringVoters";
 import VotingSessionStarted from "./Forms/VotingSessionStarted";
+import VotingSessionEnded from "./Forms/VotingSessionEnded";
 import ProposalRegistrationStart from "./Forms/ProposalRegistrationStart";
 import ProposalRegistrationEnded from "./Forms/ProposalRegistrationEnded";
+import VotesTallied from "./Forms/VotesTallied";
 
 const Container = styled.div`
   display: flex;
@@ -47,6 +49,10 @@ const SwitchForms = (currentStatus, ethContext) => {
       return <ProposalRegistrationEnded />;
     case 3:
       return <VotingSessionStarted context={ethContext} />;
+    case 4:
+      return <VotingSessionEnded />;
+    case 5:
+      return <VotesTallied context={ethContext} />;
     default:
       return null;
   }
@@ -88,6 +94,7 @@ const FormsContainer = ({ currentStatus }) => {
           .send({ from: state.user.address });
         break;
       case 3:
+        console.log("test");
         await state.contract.methods
           .endVotingSession()
           .send({ from: state.user.address });

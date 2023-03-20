@@ -3,198 +3,132 @@ import {
   InputLeftAddon,
   InputGroup,
   Button,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   VStack,
   Heading,
-  Card,
-  Text,
-  CardBody,
+  useToast,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
 import { useState } from "react";
+import { errorManager } from "../../../utils.js";
 
 const VotingSessionStarted = ({ context }) => {
   const { user, contract } = context;
-
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-  const [displayedProposal, setDisplayedProposal] = useState({
-    id: -1,
-    description: "",
-    nbVote: "",
-    isVisible: false,
-  });
+  const toast = useToast();
 
   const formik = useFormik({
     initialValues: {
-      id: 0,
+      proposalId: "",
     },
 
-    onSubmit: async () => {
-      if (isValidProposal(displayedProposal.id)) {
-        var callOK = true;
-        try {
-          // Set vote and refresh UI
-          await contract.methods
-            .setVote(displayedProposal.id)
-            .send({ from: user.address });
-          var result = await contract.methods
-            .getOneProposal(displayedProposal.id)
-            .call({ from: user.address });
-          displayedProposal.voteCount = result.voteCount;
-          setDisplayedProposal((curr) => ({
-            ...curr,
-            nbVote: result.voteCount,
-          }));
-        } catch (error) {
-          callOK = false;
-          manageCallError(error);
-        }
+    onSubmit: async (values) => {
 
-        manageError(!callOK);
+      const unknownPropToast = {
+        position: "bottom-left",
+        title: "Propsal error.",
+        description: "The proposal does not exist !",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      };
+
+      if (!isValidProposal(values.proposalId)) {
+        toast(unknownPropToast);
+        return;
       }
+
+      // Get the proposal informations from the proposal id and display them
+      try {
+        await contract.methods.getOneProposal(values.proposalId).call({ from: user.address });
+      } catch (error) {
+        toast(unknownPropToast);
+        return;
+      }
+
+
+      try {
+        // Set vote
+        await contract.methods.setVote(values.proposalId).send({ from: user.address });
+
+        toast({
+          position: "bottom-left",
+          title: "Voted !",
+          description: "Successfully voted !",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+      catch (error) {
+
+        toast({
+          position: "bottom-left",
+          title: "Voting call error.",
+          description: `${errorManager(error)}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
     },
   });
 
-  const onChange = async (e) => {
-    if (isValidProposal(e.target.value)) {
-      var callOK = true;
-      // Get the proposal informations from the proposal id and display them
-      try {
-        var result = await contract.methods
-          .getOneProposal(e.target.value)
-          .call({ from: user.address });
-        setDisplayedProposal({
-          id: e.target.value,
-          description: result.description,
-          nbVote: result.voteCount,
-          isVisible: true,
-        });
-      } catch (error) {
-        callOK = false;
-        manageCallError(error);
-      }
-
-      manageError(!callOK);
-    }
+  const onChange = (e) => {
+    formik.handleChange(e);
   };
 
-  const isValidProposal = (e) => {
+  const isValidProposal = (id) => {
     // Check if the value entered by the user is a number and if it's not the default proposal at index 0
-    var isNumber = /^\d+$|^$/.test(e);
-    var isGenesisProp = e === 0;
-    setErrorMessage("The proposal does not exist !");
-    var isValid = isNumber && !isGenesisProp;
-    manageError(!isValid);
+    var isNumber = /^\d+$|^$/.test(id);
+    var isGenesisProp = id === "0";
+    const isValid = isNumber && !isGenesisProp;
     return isValid;
   };
 
-  const manageError = (isInError) => {
-    if (isInError) displayedProposal.isVisible = false;
-
-    setIsError(isInError);
-    setIsOpen(isInError);
-  };
-
-  const onClosingVotingSession = async () => {
-    var callOK = true;
-    try {
-      await contract.methods.endVotingSession().send({ from: user.address });
-    } catch (error) {
-      callOK = false;
-      manageCallError(error);
-    }
-
-    manageError(!callOK);
-  };
-
-  const manageCallError = async (error) => {
-    var keyMessage = error.message.indexOf("message:" - 1);
-    if (keyMessage !== -1) {
-      var message = error.message.substring(keyMessage);
-      var endMessage = message.indexOf("\n");
-      var errorMessage = message.substring(0, endMessage);
-      setErrorMessage(errorMessage);
-    } else {
-      setErrorMessage(error.message);
-    }
-  };
-
-  const isVisible = isOpen && isError;
-
   return (
     <>
-      {user.isOwner ? (
+      {user.isOwner && !user.isVoter ? (
         <VStack align="start" spacing="24px">
           <Heading as="h3" size="lg">
             ⏳ Voters are voting...
           </Heading>
-
-          <Button
-            size="lg"
-            colorScheme="teal"
-            type="submit"
-            rightIcon={<CheckIcon />}
-            onClick={onClosingVotingSession}
-          >
-            Close voting session
-          </Button>
         </VStack>
       ) : (
         <>
-          <form onSubmit={formik.handleSubmit}>
-            <VStack align="start" spacing="24px">
-              <InputGroup size="lg">
-                <InputLeftAddon children="id" />
-                <Input
-                  errorBorderColor="red.300"
-                  id="id"
-                  placeholder="Proposal ID"
-                  onBlur={onChange}
-                />
-              </InputGroup>
+          {user.isVoter ? (
 
-              <Card hidden={!displayedProposal.isVisible}>
-                <CardBody>
-                  <Text fontSize="xl" as="b">
-                    Proposal N° {displayedProposal.id}.
-                  </Text>
-                  <Text fontSize="xl">{displayedProposal.description}</Text>
-                  <Text fontSize="xl" as="i">
-                    (Nombre de vote: {displayedProposal.nbVote})
-                  </Text>
-                </CardBody>
-              </Card>
+            <form onSubmit={formik.handleSubmit}>
+              <VStack align="start" spacing="24px">
+                <InputGroup size="lg">
+                  <InputLeftAddon children="id" />
+                  <Input
+                    errorBorderColor="red.300"
+                    id="proposalId"
+                    placeholder="Proposal ID"
+                    value={formik.values.proposalId}
+                    onChange={onChange}
+                  />
+                </InputGroup>
 
-              <Button
-                size="lg"
-                colorScheme="teal"
-                type="submit"
-                rightIcon={<CheckIcon />}
-              >
-                Vote
-              </Button>
-            </VStack>
-          </form>
+                <Button
+                  size="lg"
+                  colorScheme="teal"
+                  type="submit"
+                  rightIcon={<CheckIcon />}
+                >
+                  Vote
+                </Button>
+              </VStack>
+            </form>
+
+          ) : (
+            <Heading as="h3" size="lg">
+              ❌ Sorry, but you are not registered.
+            </Heading>
+          )
+          }
         </>
-      )}
-      {isVisible && (
-        <Alert
-          onClick={() => {
-            setIsOpen(false);
-          }}
-          style={{ borderRadius: 4, marginTop: 24, cursor: "pointer" }}
-          status="error"
-        >
-          <AlertIcon />
-          <AlertTitle>ERROR !</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
       )}
     </>
   );
