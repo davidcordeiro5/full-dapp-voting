@@ -1,6 +1,7 @@
 # Voting DApp
 
-This repository contains the front end to interact with the [Voting.sol](https://github.com/lecascyril/CodesSatoshi/blob/main/Voting.sol) smart contract.
+This repository contains the voting system smart contract and the front end to interact with it.
+The voting smart contract is based on [Voting.sol](https://github.com/lecascyril/CodesSatoshi/blob/main/Voting.sol), it has been modified to avoid a potential DoS Gas limit attack on the first contract version.
 
   ## Architecture
 
@@ -25,7 +26,7 @@ This repository contains the front end to interact with the [Voting.sol](https:/
   
   The DApp is deployed at the following address https://full-dapp-voting-ten.vercel.app/
   The smart contract is available on the goerli blockchain at the address [0x8Dd16a0Aa4A70Ab2a3576F30d4CDe78F1e214AB0](https://goerli.etherscan.io/address/0x8dd16a0aa4a70ab2a3576f30d4cde78f1e214ab0)
-  The smart contract has been modified to avoid a potential DoS Gas limit attack on the first contract version. 
+  
   
   ## Preview
   
