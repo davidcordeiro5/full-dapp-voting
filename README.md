@@ -25,6 +25,7 @@ The voting smart contract is based on [Voting.sol](https://github.com/lecascyril
   ## Decentralized application
   
   The DApp is deployed at the following address https://full-dapp-voting-ten.vercel.app/
+  
   The smart contract is available on the goerli blockchain at the address [0x8Dd16a0Aa4A70Ab2a3576F30d4CDe78F1e214AB0](https://goerli.etherscan.io/address/0x8dd16a0aa4a70ab2a3576f30d4cde78f1e214ab0)
   
   
