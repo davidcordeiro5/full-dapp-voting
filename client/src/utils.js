@@ -27,3 +27,12 @@ export const errorManager = (error) => {
 
 export const addressFormated = (addr) =>
   `${addr.substring(0, 5)}...${addr.substr(addr.length - 5)}`;
+
+export const toastErrorInputInvalide = {
+  position: "bottom-left",
+  title: "Error.",
+  description: `Input invalide`,
+  status: "error",
+  duration: 5000,
+  isClosable: true,
+};

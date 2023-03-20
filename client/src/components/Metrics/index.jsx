@@ -12,7 +12,7 @@ const Container = styled.div`
   `}
 `;
 
-const Metrics = ({ contract }) => {
+const Metrics = ({ contract, user }) => {
   const [storedVoters, setStoredVoters] = useState([]);
   const [rencentVoter, setRencentVoter] = useState();
   const [storedProposals, setStoredProposal] = useState([]);
@@ -72,10 +72,12 @@ const Metrics = ({ contract }) => {
         📊 Metrics
       </Heading>
       <Voters addressList={storedVoters} lastAddress={rencentVoter} />
-      <Proposals
-        storedProposals={storedProposals}
-        rencentProposals={rencentProposals}
-      />
+      {user && user.isVoter && (
+        <Proposals
+          storedProposals={storedProposals}
+          rencentProposals={rencentProposals}
+        />
+      )}
     </Container>
   );
 };

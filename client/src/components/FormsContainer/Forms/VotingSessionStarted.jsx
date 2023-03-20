@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Input,
   InputLeftAddon,
@@ -9,11 +10,13 @@ import {
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
+import { AlertError } from "../../Utils";
 import { errorManager } from "../../../utils.js";
 
 const VotingSessionStarted = ({ context }) => {
   const { user, contract } = context;
   const toast = useToast();
+  const [isOpenAlert, setIsOpenAlert] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -32,6 +35,7 @@ const VotingSessionStarted = ({ context }) => {
 
       if (!isValidProposal(values.proposalId)) {
         toast(unknownPropToast);
+        setIsOpenAlert(true);
         return;
       }
 
@@ -42,6 +46,7 @@ const VotingSessionStarted = ({ context }) => {
           .call({ from: user.address });
       } catch (error) {
         toast(unknownPropToast);
+        setIsOpenAlert(true);
         return;
       }
 
@@ -50,6 +55,8 @@ const VotingSessionStarted = ({ context }) => {
         await contract.methods
           .setVote(values.proposalId)
           .send({ from: user.address });
+
+        window.location.reload(false);
 
         toast({
           position: "bottom-left",
@@ -68,6 +75,7 @@ const VotingSessionStarted = ({ context }) => {
           duration: 5000,
           isClosable: true,
         });
+        setIsOpenAlert(true);
       }
     },
   });
@@ -117,6 +125,13 @@ const VotingSessionStarted = ({ context }) => {
                   Vote
                 </Button>
               </VStack>
+              <AlertError
+                isOpen={isOpenAlert}
+                errorMessage="Empty value or bad id"
+                onClickAlert={() => {
+                  setIsOpenAlert(false);
+                }}
+              />
             </form>
           ) : (
             <Heading as="h3" size="lg">

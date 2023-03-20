@@ -51,7 +51,7 @@ const Voting = () => {
         <WorkflowStatus currentStatus={workflowStatus} />
         <FormsContainer currentStatus={workflowStatus} />
       </Flex>
-      <Metrics contract={state.contract} />
+      <Metrics contract={state.contract} user={state.user} />
     </>
   );
 };

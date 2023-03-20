@@ -2,42 +2,20 @@ import { HStack, VStack, Tag, Box, Heading, Text } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 
 const Profile = ({ user, contract }) => {
-  const [rencentVoter, setRencentVoter] = useState();
-  const [isVoter, setIsVoter] = useState(false);
   const [voter, setVoter] = useState();
 
   useEffect(() => {
-    if (!contract) {
+    if (!user && !contract) {
       return;
     }
-    const waitEvent = async () => {
-      await contract.events
-        .VoterRegistered({ fromBlock: "earliest" })
-        .on("data", (event) => {
-          setRencentVoter(event.returnValues.voterAddress);
-        });
-    };
 
-    waitEvent();
-  }, [contract]);
-
-  useEffect(() => {
-    if (user && user.address === rencentVoter) {
-      setIsVoter(true);
-    }
-  }, [rencentVoter, user]);
-
-  useEffect(() => {
-    if (!user && !contract && !isVoter) {
-      return;
-    }
     const waitVoter = async () => {
-      if (contract && (isVoter || user.isVoter)) {
-        const t = await contract.methods
+      if (contract && user.isVoter) {
+        const result = await contract.methods
           .getVoter(user.address)
           .call({ from: user.address });
 
-        setVoter((crr) => ({ ...crr, hasVoted: t[0] }));
+        setVoter((crr) => ({ ...crr, hasVoted: result.hasVoted }));
       } else {
         setVoter((crr) => ({ ...crr, hasVoted: false }));
       }
@@ -45,7 +23,7 @@ const Profile = ({ user, contract }) => {
 
     waitVoter();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user, isVoter]);
+  }, [user]);
 
   const getUserEmoji = (user) => {
     if (!user) return `👤`;
@@ -83,12 +61,12 @@ const Profile = ({ user, contract }) => {
                 Owner
               </Tag>
             )}
-            {(user.isVoter || isVoter) && (
+            {user.isVoter && (
               <Tag colorScheme="cyan" size="lg">
                 Voter
               </Tag>
             )}
-            {!user.isVoter && !isVoter && <Tag size="lg">Not voter</Tag>}
+            {!user.isVoter && <Tag size="lg">Not voter</Tag>}
             {voter?.hasVoted && (
               <Tag colorScheme="pink" size="lg">
                 Has voted
