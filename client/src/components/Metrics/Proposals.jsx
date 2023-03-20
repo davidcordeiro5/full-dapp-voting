@@ -6,7 +6,6 @@ const Proposals = ({ storedProposals, rencentProposals }) => {
   const {
     state: { contract, user },
   } = useEth();
-
   const [storedDescriptions, setStoredDescriptions] = useState([]);
   const [rencentDescriptions, setRencentDescriptions] = useState([]);
 
@@ -33,11 +32,19 @@ const Proposals = ({ storedProposals, rencentProposals }) => {
       getProposals(storedProposals, setStoredDescriptions);
     }
 
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [storedProposals, contract, user]);
+
+  useEffect(() => {
+    if (!contract && !user) {
+      return;
+    }
+
     if (rencentDescriptions && contract) {
-      getProposals(rencentDescriptions, setRencentDescriptions);
+      getProposals(rencentProposals, setRencentDescriptions);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [storedProposals, rencentProposals, contract, user]);
+  }, [rencentProposals, contract, user]);
 
   const length = storedProposals.length + rencentProposals.length;
 

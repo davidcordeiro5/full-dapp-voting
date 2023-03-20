@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Input,
   InputLeftAddon,
@@ -9,12 +10,13 @@ import {
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
-import { useState } from "react";
+import { AlertError } from "../../Utils";
 import { errorManager } from "../../../utils.js";
 
 const VotingSessionStarted = ({ context }) => {
   const { user, contract } = context;
   const toast = useToast();
+  const [isOpenAlert, setIsOpenAlert] = useState(false);
 
   const formik = useFormik({
     initialValues: {
@@ -22,7 +24,6 @@ const VotingSessionStarted = ({ context }) => {
     },
 
     onSubmit: async (values) => {
-
       const unknownPropToast = {
         position: "bottom-left",
         title: "Propsal error.",
@@ -34,21 +35,28 @@ const VotingSessionStarted = ({ context }) => {
 
       if (!isValidProposal(values.proposalId)) {
         toast(unknownPropToast);
+        setIsOpenAlert(true);
         return;
       }
 
       // Get the proposal informations from the proposal id and display them
       try {
-        await contract.methods.getOneProposal(values.proposalId).call({ from: user.address });
+        await contract.methods
+          .getOneProposal(values.proposalId)
+          .call({ from: user.address });
       } catch (error) {
         toast(unknownPropToast);
+        setIsOpenAlert(true);
         return;
       }
 
-
       try {
         // Set vote
-        await contract.methods.setVote(values.proposalId).send({ from: user.address });
+        await contract.methods
+          .setVote(values.proposalId)
+          .send({ from: user.address });
+
+        window.location.reload(false);
 
         toast({
           position: "bottom-left",
@@ -58,9 +66,7 @@ const VotingSessionStarted = ({ context }) => {
           duration: 5000,
           isClosable: true,
         });
-      }
-      catch (error) {
-
+      } catch (error) {
         toast({
           position: "bottom-left",
           title: "Voting call error.",
@@ -69,8 +75,8 @@ const VotingSessionStarted = ({ context }) => {
           duration: 5000,
           isClosable: true,
         });
+        setIsOpenAlert(true);
       }
-
     },
   });
 
@@ -97,7 +103,6 @@ const VotingSessionStarted = ({ context }) => {
       ) : (
         <>
           {user.isVoter ? (
-
             <form onSubmit={formik.handleSubmit}>
               <VStack align="start" spacing="24px">
                 <InputGroup size="lg">
@@ -120,14 +125,19 @@ const VotingSessionStarted = ({ context }) => {
                   Vote
                 </Button>
               </VStack>
+              <AlertError
+                isOpen={isOpenAlert}
+                errorMessage="Empty value or bad id"
+                onClickAlert={() => {
+                  setIsOpenAlert(false);
+                }}
+              />
             </form>
-
           ) : (
             <Heading as="h3" size="lg">
               ❌ Sorry, but you are not registered.
             </Heading>
-          )
-          }
+          )}
         </>
       )}
     </>

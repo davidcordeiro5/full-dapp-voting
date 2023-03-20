@@ -3,6 +3,7 @@ import { useFormik } from "formik";
 import { AddIcon } from "@chakra-ui/icons";
 import { Input, Button, Heading, useToast } from "@chakra-ui/react";
 
+import { toastErrorInputInvalide } from "../../../utils.js";
 import { AlertError } from "../../Utils";
 
 const ProposalRegistrationStart = ({ context }) => {
@@ -17,6 +18,8 @@ const ProposalRegistrationStart = ({ context }) => {
     onSubmit: async (values) => {
       if (!values.proposal) {
         setIsOpenAlert(true);
+
+        toast(toastErrorInputInvalide);
         return;
       }
 

@@ -10,6 +10,7 @@ import {
   useToast,
 } from "@chakra-ui/react";
 
+import { toastErrorInputInvalide } from "../../../utils.js";
 import { AlertError } from "../../Utils";
 
 const RegisteringVoters = ({ context }) => {
@@ -27,12 +28,15 @@ const RegisteringVoters = ({ context }) => {
 
       if (!isAddress) {
         setIsOpenAlert(true);
+        toast(toastErrorInputInvalide);
         return;
       }
 
       await contract.methods
         .addVoter(values.address)
         .send({ from: user.address });
+
+      window.location.reload(false);
 
       toast({
         position: "bottom-left",

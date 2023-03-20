@@ -1,4 +1,5 @@
 import { Wrap, WrapItem, VStack, Heading } from "@chakra-ui/react";
+import { addressFormated } from "../../utils";
 
 const Voters = ({ addressList, lastAddress }) => {
   const length = addressList.length;
@@ -17,7 +18,7 @@ const Voters = ({ addressList, lastAddress }) => {
               style={{ listStyle: "none", fontSize: 16, width: "fit-content" }}
               key={index}
             >
-              👤 : {`${addr.substring(0, 5)}...${addr.substr(addr.length - 5)}`}
+              👤 : {addressFormated(addr)}
             </WrapItem>
           ))}
         </Wrap>

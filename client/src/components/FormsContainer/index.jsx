@@ -94,7 +94,6 @@ const FormsContainer = ({ currentStatus }) => {
           .send({ from: state.user.address });
         break;
       case 3:
-        console.log("test");
         await state.contract.methods
           .endVotingSession()
           .send({ from: state.user.address });
