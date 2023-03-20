@@ -18,3 +18,10 @@ export const workflowStatusText = (status) => {
       return "";
   }
 };
+
+export const errorManager = (error) => {
+
+  console.log("Error:", error);
+  const msg = error.toString().split('"')[3].split(":")[1].split("revert ")[1]
+  return msg ? msg : "An error has occured"
+}

@@ -1,24 +1,12 @@
 import {
-  Button,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   VStack,
   Heading,
 } from "@chakra-ui/react";
-import { CheckIcon } from "@chakra-ui/icons";
 import useEth from "../../../contexts/EthContext/useEth";
-import { useEffect, useState } from "react";
 
 const VotingSessionEnded = () => {
 
   const { state: { user } } = useEth();
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
-
-  const isVisible = isOpen && isError;
 
   return (
     <>
@@ -45,21 +33,6 @@ const VotingSessionEnded = () => {
             ❌ Sorry, but you are not registered.
           </Heading>
         )
-      )}
-      {isVisible && (
-        <Alert
-          onClick={() => {
-            setIsOpen(false);
-          }}
-          style={{ borderRadius: 4, marginTop: 24, cursor: "pointer" }}
-          status="error"
-        >
-          <AlertIcon />
-          <AlertTitle>ERROR !</AlertTitle>
-          <AlertDescription>
-            {errorMessage}
-          </AlertDescription>
-        </Alert>
       )}
     </>
   );

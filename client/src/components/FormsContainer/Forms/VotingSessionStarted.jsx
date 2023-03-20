@@ -3,26 +3,21 @@ import {
   InputLeftAddon,
   InputGroup,
   Button,
-  Alert,
-  AlertIcon,
-  AlertTitle,
-  AlertDescription,
   VStack,
   Heading,
   Card,
   Text,
   CardBody,
+  useToast,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import { errorManager } from "../../../utils.js";
 
 const VotingSessionStarted = ({ context }) => {
   const { user, contract } = context;
-
-  const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState("");
-  const [isOpen, setIsOpen] = useState(false);
+  const toast = useToast();
   const [displayedProposal, setDisplayedProposal] = useState(
     {
       id: -1,
@@ -36,79 +31,90 @@ const VotingSessionStarted = ({ context }) => {
     },
 
     onSubmit: async () => {
-      if (isValidProposal(displayedProposal.id)) {
-        let callOK = true;
-        try {
-          // Set vote and refresh UI
-          await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
-        }
-        catch (error) {
-          callOK = false;
-          manageCallError(error);
-        }
 
-        manageError(!callOK);
+      if (!isValidProposal(displayedProposal.id)) {
+        toast({
+          position: "bottom-left",
+          title: "Propsal error.",
+          description: "The proposal does not exist !",
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+
+        return;
       }
+
+      try {
+        // Set vote
+        await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
+
+        toast({
+          position: "bottom-left",
+          title: "Voted !",
+          description: "Successfully voted !",
+          status: "success",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+      catch (error) {
+
+        console.log(error.message);
+
+        toast({
+          position: "bottom-left",
+          title: "Voting call error.",
+          description: `${errorManager(error)}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+      }
+
     },
   });
 
   const onProposalIdChange = async (e) => {
-    if (isValidProposal(e.target.value)) {
 
-      let callOK = true;
-      // Get the proposal informations from the proposal id and display them
-      try {
-        const result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
-        setDisplayedProposal({
-          id: e.target.value,
-          description: result.description,
-          isVisible: true
-        });
-      } catch (error) {
-        callOK = false;
-        console.log(error);
-        manageCallError(error);
-      }
+    const unknownPropToast = {
+      position: "bottom-left",
+      title: "Propsal error.",
+      description: "The proposal does not exist !",
+      status: "error",
+      duration: 5000,
+      isClosable: true,
+    };
 
-      manageError(!callOK);
+    if (!isValidProposal(e.target.value)) {
+      toast(unknownPropToast);
+      return;
+    }
+
+    // Get the proposal informations from the proposal id and display them
+    try {
+      const result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
+      setDisplayedProposal({
+        id: e.target.value,
+        description: result.description,
+        isVisible: true
+      });
+    } catch (error) {
+      toast(unknownPropToast);
     }
   };
 
   const isValidProposal = (e) => {
     // Check if the value entered by the user is a number and if it's not the default proposal at index 0
     var isNumber = /^\d+$|^$/.test(e);
-    var isGenesisProp = e === 0;
-    setErrorMessage("The proposal does not exist !");
+    var isGenesisProp = e == 0;
     const isValid = isNumber && !isGenesisProp;
-    manageError(!isValid);
     return isValid;
   };
 
-  const manageError = (isInError) => {
-    if (isInError) displayedProposal.isVisible = false;
-
-    setIsError(isInError);
-    setIsOpen(isInError);
-  };
-
-  const manageCallError = async (error) => {
-    const keyMessage = error.message.indexOf("message:" - 1);
-    if (keyMessage != -1) {
-
-      const message = error.message.substring(keyMessage);
-      const endMessage = message.indexOf("\n");
-      const errorMessage = message.substring(0, endMessage);
-      setErrorMessage(errorMessage);
-    } else {
-      setErrorMessage(error.message);
-    }
-  };
-
-  const isVisible = isOpen && isError;
-
   return (
     <>
-      {user.isOwner ? (
+      {user.isOwner && !user.isVoter ? (
         <VStack align="start" spacing="24px">
           <Heading as="h3" size="lg">
             ⏳ Voters are voting...
@@ -155,19 +161,6 @@ const VotingSessionStarted = ({ context }) => {
           )
           }
         </>
-      )}
-      {isVisible && (
-        <Alert
-          onClick={() => {
-            setIsOpen(false);
-          }}
-          style={{ borderRadius: 4, marginTop: 24, cursor: "pointer" }}
-          status="error"
-        >
-          <AlertIcon />
-          <AlertTitle>ERROR !</AlertTitle>
-          <AlertDescription>{errorMessage}</AlertDescription>
-        </Alert>
       )}
     </>
   );

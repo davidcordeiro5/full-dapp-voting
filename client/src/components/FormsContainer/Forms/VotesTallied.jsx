@@ -4,14 +4,16 @@ import {
   Card,
   Text,
   CardBody,
+  useToast,
 } from "@chakra-ui/react";
-import { CheckIcon } from "@chakra-ui/icons";
 import useEth from "../../../contexts/EthContext/useEth";
 import { useEffect, useState } from "react";
+import { errorManager } from "../../../utils.js";
 
 const VotesTallied = (context) => {
 
   const { user, contract } = context;
+  const toast = useToast();
 
   const [winningProposal, setWinningProposal] = useState({
     id: -1,
@@ -23,19 +25,16 @@ const VotesTallied = (context) => {
   useEffect(() => {
     (async function () {
 
-      console.log("test");
-
       try {
 
         setWinningProposal({
           id: 12,
-          description: "Proopsal de test",
+          description: "Proposal de test",
           voteCount: 6,
           isVisible: true,
         });
 
         if (contract) {
-
 
           const winningProposalID = await contract.methods
             .winningProposalID()
@@ -52,7 +51,15 @@ const VotesTallied = (context) => {
       }
       catch (error) {
 
-        console.log(error);
+        toast({
+          position: "bottom-left",
+          title: "Get winner error.",
+          description: `${errorManager(error)}`,
+          status: "error",
+          duration: 5000,
+          isClosable: true,
+        });
+
       }
     })();
   }, [context])
