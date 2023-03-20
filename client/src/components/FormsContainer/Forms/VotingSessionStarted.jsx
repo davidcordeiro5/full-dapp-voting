@@ -5,9 +5,6 @@ import {
   Button,
   VStack,
   Heading,
-  Card,
-  Text,
-  CardBody,
   useToast,
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
@@ -18,36 +15,40 @@ import { errorManager } from "../../../utils.js";
 const VotingSessionStarted = ({ context }) => {
   const { user, contract } = context;
   const toast = useToast();
-  const [displayedProposal, setDisplayedProposal] = useState(
-    {
-      id: -1,
-      description: "",
-      isVisible: false
-    });
 
   const formik = useFormik({
     initialValues: {
-      id: 0,
+      proposalId: "",
     },
 
-    onSubmit: async () => {
+    onSubmit: async (values) => {
 
-      if (!isValidProposal(displayedProposal.id)) {
-        toast({
-          position: "bottom-left",
-          title: "Propsal error.",
-          description: "The proposal does not exist !",
-          status: "error",
-          duration: 5000,
-          isClosable: true,
-        });
+      const unknownPropToast = {
+        position: "bottom-left",
+        title: "Propsal error.",
+        description: "The proposal does not exist !",
+        status: "error",
+        duration: 5000,
+        isClosable: true,
+      };
 
+      if (!isValidProposal(values.proposalId)) {
+        toast(unknownPropToast);
         return;
       }
 
+      // Get the proposal informations from the proposal id and display them
+      try {
+        await contract.methods.getOneProposal(values.proposalId).call({ from: user.address });
+      } catch (error) {
+        toast(unknownPropToast);
+        return;
+      }
+
+
       try {
         // Set vote
-        await contract.methods.setVote(displayedProposal.id).send({ from: user.address });
+        await contract.methods.setVote(values.proposalId).send({ from: user.address });
 
         toast({
           position: "bottom-left",
@@ -59,8 +60,6 @@ const VotingSessionStarted = ({ context }) => {
         });
       }
       catch (error) {
-
-        console.log(error.message);
 
         toast({
           position: "bottom-left",
@@ -75,39 +74,14 @@ const VotingSessionStarted = ({ context }) => {
     },
   });
 
-  const onProposalIdChange = async (e) => {
-
-    const unknownPropToast = {
-      position: "bottom-left",
-      title: "Propsal error.",
-      description: "The proposal does not exist !",
-      status: "error",
-      duration: 5000,
-      isClosable: true,
-    };
-
-    if (!isValidProposal(e.target.value)) {
-      toast(unknownPropToast);
-      return;
-    }
-
-    // Get the proposal informations from the proposal id and display them
-    try {
-      const result = await contract.methods.getOneProposal(e.target.value).call({ from: user.address });
-      setDisplayedProposal({
-        id: e.target.value,
-        description: result.description,
-        isVisible: true
-      });
-    } catch (error) {
-      toast(unknownPropToast);
-    }
+  const onChange = (e) => {
+    formik.handleChange(e);
   };
 
-  const isValidProposal = (e) => {
+  const isValidProposal = (id) => {
     // Check if the value entered by the user is a number and if it's not the default proposal at index 0
-    var isNumber = /^\d+$|^$/.test(e);
-    var isGenesisProp = e == 0;
+    var isNumber = /^\d+$|^$/.test(id);
+    var isGenesisProp = id === "0";
     const isValid = isNumber && !isGenesisProp;
     return isValid;
   };
@@ -130,18 +104,12 @@ const VotingSessionStarted = ({ context }) => {
                   <InputLeftAddon children="id" />
                   <Input
                     errorBorderColor="red.300"
-                    id="id"
+                    id="proposalId"
                     placeholder="Proposal ID"
-                    onBlur={onProposalIdChange}
+                    value={formik.values.proposalId}
+                    onChange={onChange}
                   />
                 </InputGroup>
-
-                <Card hidden={!displayedProposal.isVisible}>
-                  <CardBody>
-                    <Text fontSize="xl" as="b" >Proposal N° {displayedProposal.id}.</Text>
-                    <Text fontSize="xl" >{displayedProposal.description}</Text>
-                  </CardBody>
-                </Card>
 
                 <Button
                   size="lg"

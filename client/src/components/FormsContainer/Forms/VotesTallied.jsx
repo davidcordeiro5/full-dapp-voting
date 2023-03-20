@@ -10,11 +10,10 @@ import useEth from "../../../contexts/EthContext/useEth";
 import { useEffect, useState } from "react";
 import { errorManager } from "../../../utils.js";
 
-const VotesTallied = (context) => {
+const VotesTallied = ({ context }) => {
 
   const { user, contract } = context;
   const toast = useToast();
-  const { state } = useEth();
 
 
   const [winningProposal, setWinningProposal] = useState({
@@ -25,23 +24,24 @@ const VotesTallied = (context) => {
   });
 
   useEffect(() => {
+
+    if (!context && !contract) {
+      return;
+    }
+
     (async function () {
 
       try {
 
-        if (!state.contract) {
-          return;
-        }
-
-        const winningProposalID = await state.contract.methods
+        const winningProposalID = await contract.methods
           .winningProposalID()
           .call();
 
-        if (state.user.isVoter) {
+        if (user.isVoter) {
 
-          var result = await state.contract.methods
+          var result = await contract.methods
             .getOneProposal(winningProposalID)
-            .call({ from: state.user.address });
+            .call({ from: user.address });
         }
 
         setWinningProposal({
@@ -52,7 +52,6 @@ const VotesTallied = (context) => {
         });
       }
       catch (error) {
-        console.log(error.message);
         toast({
           position: "bottom-left",
           title: "Get winner error.",
@@ -64,7 +63,7 @@ const VotesTallied = (context) => {
 
       }
     })();
-  }, [state])
+  }, [context])
 
 
   return (
@@ -77,7 +76,7 @@ const VotesTallied = (context) => {
               🏆 La proposition {winningProposal.id} remporte le vote ! 🏆
             </Heading>
 
-            {state.user.isVoter ? (
+            {user.isVoter ? (
               <Card hidden={!winningProposal.isVisible} style={{ alignSelf: "center" }}>
                 <CardBody>
                   <Text fontSize="xl" as="b">
