@@ -14,6 +14,8 @@ const VotesTallied = (context) => {
 
   const { user, contract } = context;
   const toast = useToast();
+  const { state } = useEth();
+
 
   const [winningProposal, setWinningProposal] = useState({
     id: -1,
@@ -27,30 +29,30 @@ const VotesTallied = (context) => {
 
       try {
 
+        if (!state.contract) {
+          return;
+        }
+
+        const winningProposalID = await state.contract.methods
+          .winningProposalID()
+          .call();
+
+        if (state.user.isVoter) {
+
+          var result = await state.contract.methods
+            .getOneProposal(winningProposalID)
+            .call({ from: state.user.address });
+        }
+
         setWinningProposal({
-          id: 12,
-          description: "Proposal de test",
-          voteCount: 6,
+          id: winningProposalID,
+          description: result ? result.description : "",
+          voteCount: result ? result.voteCount : 0,
           isVisible: true,
         });
-
-        if (contract) {
-
-          const winningProposalID = await contract.methods
-            .winningProposalID()
-            .call();
-
-          console.log(winningProposalID);
-
-          var result = await contract.methods
-            .getOneProposal(winningProposalID)
-            .call({ from: user.address });
-
-          console.log(result);
-        }
       }
       catch (error) {
-
+        console.log(error.message);
         toast({
           position: "bottom-left",
           title: "Get winner error.",
@@ -62,7 +64,7 @@ const VotesTallied = (context) => {
 
       }
     })();
-  }, [context])
+  }, [state])
 
 
   return (
@@ -75,17 +77,21 @@ const VotesTallied = (context) => {
               🏆 La proposition {winningProposal.id} remporte le vote ! 🏆
             </Heading>
 
-            <Card hidden={!winningProposal.isVisible} style={{ alignSelf: "center" }}>
-              <CardBody>
-                <Text fontSize="xl" as="b">
-                  Proposal N° {winningProposal.id}.
-                </Text>
-                <Text fontSize="xl">{winningProposal.description}</Text>
-                <Text fontSize="xl" as="i">
-                  (Nombre de vote: {winningProposal.voteCount})
-                </Text>
-              </CardBody>
-            </Card>
+            {state.user.isVoter ? (
+              <Card hidden={!winningProposal.isVisible} style={{ alignSelf: "center" }}>
+                <CardBody>
+                  <Text fontSize="xl" as="b">
+                    Proposal N° {winningProposal.id}.
+                  </Text>
+                  <Text fontSize="xl">{winningProposal.description}</Text>
+                  <Text fontSize="xl" as="i">
+                    (Nombre de vote: {winningProposal.voteCount})
+                  </Text>
+                </CardBody>
+              </Card>
+            ) : (
+              <>
+              </>)}
 
           </VStack>
         </>
