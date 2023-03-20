@@ -20,8 +20,10 @@ export const workflowStatusText = (status) => {
 };
 
 export const errorManager = (error) => {
-
   console.log("Error:", error);
-  const msg = error.toString().split('"')[3].split(":")[1].split("revert ")[1]
-  return msg ? msg : "An error has occured"
-}
+  const msg = error.toString().split('"')[3].split(":")[1].split("revert ")[1];
+  return msg ? msg : "An error has occured";
+};
+
+export const addressFormated = (addr) =>
+  `${addr.substring(0, 5)}...${addr.substr(addr.length - 5)}`;

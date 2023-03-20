@@ -9,7 +9,6 @@ import {
 } from "@chakra-ui/react";
 import { CheckIcon } from "@chakra-ui/icons";
 import { useFormik } from "formik";
-import { useState } from "react";
 import { errorManager } from "../../../utils.js";
 
 const VotingSessionStarted = ({ context }) => {
@@ -22,7 +21,6 @@ const VotingSessionStarted = ({ context }) => {
     },
 
     onSubmit: async (values) => {
-
       const unknownPropToast = {
         position: "bottom-left",
         title: "Propsal error.",
@@ -39,16 +37,19 @@ const VotingSessionStarted = ({ context }) => {
 
       // Get the proposal informations from the proposal id and display them
       try {
-        await contract.methods.getOneProposal(values.proposalId).call({ from: user.address });
+        await contract.methods
+          .getOneProposal(values.proposalId)
+          .call({ from: user.address });
       } catch (error) {
         toast(unknownPropToast);
         return;
       }
 
-
       try {
         // Set vote
-        await contract.methods.setVote(values.proposalId).send({ from: user.address });
+        await contract.methods
+          .setVote(values.proposalId)
+          .send({ from: user.address });
 
         toast({
           position: "bottom-left",
@@ -58,9 +59,7 @@ const VotingSessionStarted = ({ context }) => {
           duration: 5000,
           isClosable: true,
         });
-      }
-      catch (error) {
-
+      } catch (error) {
         toast({
           position: "bottom-left",
           title: "Voting call error.",
@@ -70,7 +69,6 @@ const VotingSessionStarted = ({ context }) => {
           isClosable: true,
         });
       }
-
     },
   });
 
@@ -97,7 +95,6 @@ const VotingSessionStarted = ({ context }) => {
       ) : (
         <>
           {user.isVoter ? (
-
             <form onSubmit={formik.handleSubmit}>
               <VStack align="start" spacing="24px">
                 <InputGroup size="lg">
@@ -121,13 +118,11 @@ const VotingSessionStarted = ({ context }) => {
                 </Button>
               </VStack>
             </form>
-
           ) : (
             <Heading as="h3" size="lg">
               ❌ Sorry, but you are not registered.
             </Heading>
-          )
-          }
+          )}
         </>
       )}
     </>

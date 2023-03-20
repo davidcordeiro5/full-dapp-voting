@@ -46,7 +46,7 @@ const Voting = () => {
 
   return (
     <>
-      <Profile user={state.user} />
+      <Profile user={state.user} contract={state.contract} />
       <Flex justify="space-between" style={{ marginTop: 32 }}>
         <WorkflowStatus currentStatus={workflowStatus} />
         <FormsContainer currentStatus={workflowStatus} />
